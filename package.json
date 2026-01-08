@@ -1,6 +1,6 @@
 {
     "name": "create-zenith",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "Thin resolver for bun/npm create zenith - delegates to @zenithbuild/cli",
     "bin": {
         "create-zenith": "./index.js"

@@ -1,0 +1,24 @@
+{
+    "name": "create-zenith",
+    "version": "0.2.2",
+    "description": "Thin resolver for bun/npm create zenith - delegates to @zenithbuild/cli",
+    "bin": {
+        "create-zenith": "./index.js"
+    },
+    "type": "module",
+    "license": "MIT",
+    "author": "Zenith Team",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:zenithbuild/create-zenith.git"
+    },
+    "keywords": [
+        "zenith",
+        "create",
+        "scaffold",
+        "cli"
+    ],
+    "dependencies": {
+        "@zenithbuild/cli": "github:zenithbuild/zenith-cli"
+    }
+}

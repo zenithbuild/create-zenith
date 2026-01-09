@@ -6,6 +6,7 @@
  */
 
 import pc from 'picocolors'
+import gradient from 'gradient-string'
 
 // Brand colors
 export const colors = {
@@ -19,52 +20,79 @@ export const colors = {
     dim: pc.dim
 }
 
-// ASCII Zenith logo
+// Zenith gradient (blue to cyan)
+const zenithGradient = gradient(['#3b82f6', '#06b6d4', '#22d3ee'])
+
+// Check if running in interactive TTY mode (safe for animations)
+export function isTTY(): boolean {
+    return Boolean(
+        process.stdout.isTTY &&
+        !process.env.CI &&
+        !process.env.GITHUB_ACTIONS &&
+        !process.env.CONTINUOUS_INTEGRATION
+    )
+}
+
+// Raw ASCII logo lines (without color) for animation
+const LOGO_LINES = [
+    '  ███████╗███████╗███╗   ██╗██╗████████╗██╗  ██╗',
+    '  ╚══███╔╝██╔════╝████╗  ██║██║╚══██╔══╝██║  ██║',
+    '    ███╔╝ █████╗  ██╔██╗ ██║██║   ██║   ███████║',
+    '   ███╔╝  ██╔══╝  ██║╚██╗██║██║   ██║   ██╔══██║',
+    '  ███████╗███████╗██║ ╚████║██║   ██║   ██║  ██║',
+    '  ╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚═╝  ╚═╝'
+]
+
+const TAGLINE = 'The Modern Reactive Web Framework'
+
+// ASCII Zenith logo (static, colored)
 export const LOGO = `
-${pc.cyan('╔═══════════════════════════════════════════════════════════╗')}
-${pc.cyan('║')}                                                           ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue('███████╗'))}${pc.bold(pc.cyan('███████╗'))}${pc.bold(pc.blue('███╗   ██╗'))}${pc.bold(pc.cyan('██╗'))}${pc.bold(pc.blue('████████╗'))}${pc.bold(pc.cyan('██╗  ██╗'))}   ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue('╚══███╔╝'))}${pc.bold(pc.cyan('██╔════╝'))}${pc.bold(pc.blue('████╗  ██║'))}${pc.bold(pc.cyan('██║'))}${pc.bold(pc.blue('╚══██╔══╝'))}${pc.bold(pc.cyan('██║  ██║'))}   ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue('  ███╔╝ '))}${pc.bold(pc.cyan('█████╗  '))}${pc.bold(pc.blue('██╔██╗ ██║'))}${pc.bold(pc.cyan('██║'))}${pc.bold(pc.blue('   ██║   '))}${pc.bold(pc.cyan('███████║'))}   ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue(' ███╔╝  '))}${pc.bold(pc.cyan('██╔══╝  '))}${pc.bold(pc.blue('██║╚██╗██║'))}${pc.bold(pc.cyan('██║'))}${pc.bold(pc.blue('   ██║   '))}${pc.bold(pc.cyan('██╔══██║'))}   ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue('███████╗'))}${pc.bold(pc.cyan('███████╗'))}${pc.bold(pc.blue('██║ ╚████║'))}${pc.bold(pc.cyan('██║'))}${pc.bold(pc.blue('   ██║   '))}${pc.bold(pc.cyan('██║  ██║'))}   ${pc.cyan('║')}
-${pc.cyan('║')}   ${pc.bold(pc.blue('╚══════╝'))}${pc.bold(pc.cyan('╚══════╝'))}${pc.bold(pc.blue('╚═╝  ╚═══╝'))}${pc.bold(pc.cyan('╚═╝'))}${pc.bold(pc.blue('   ╚═╝   '))}${pc.bold(pc.cyan('╚═╝  ╚═╝'))}   ${pc.cyan('║')}
-${pc.cyan('║')}                                                           ${pc.cyan('║')}
-${pc.cyan('║')}       ${pc.dim('The Modern Reactive Web Framework')}                  ${pc.cyan('║')}
-${pc.cyan('║')}                                                           ${pc.cyan('║')}
-${pc.cyan('╚═══════════════════════════════════════════════════════════╝')}
+${pc.cyan('╔' + '═'.repeat(55) + '╗')}
+${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
+${LOGO_LINES.map(line => `${pc.cyan('║')}  ${zenithGradient(line)}  ${pc.cyan('║')}`).join('\n')}
+${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
+${pc.cyan('║')}${' '.repeat(10)}${pc.dim(TAGLINE)}${' '.repeat(10)}${pc.cyan('║')}
+${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
+${pc.cyan('╚' + '═'.repeat(55) + '╝')}
 `
 
 // Compact logo for smaller spaces
 export const LOGO_COMPACT = `
-  ${pc.bold(pc.blue('⚡'))} ${pc.bold(pc.cyan('ZENITH'))} ${pc.dim('- Modern Reactive Framework')}
+  ${pc.bold(zenithGradient('⚡ ZENITH'))} ${pc.dim('- Modern Reactive Framework')}
 `
 
-// Spinner frames for animations
-const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+// Glowing spinner frames
+const spinnerFrames = ['◐', '◓', '◑', '◒']
+const dotSpinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
 export class Spinner {
     private interval: ReturnType<typeof setInterval> | null = null
     private frameIndex = 0
     private message: string
+    private frames: string[]
 
-    constructor(message: string) {
+    constructor(message: string, useDots: boolean = true) {
         this.message = message
+        this.frames = useDots ? dotSpinnerFrames : spinnerFrames
     }
 
     start(): void {
-        // Use stdout.write for cross-runtime compatibility
+        if (!isTTY()) {
+            // Non-TTY: just print the message once
+            console.log(`${pc.cyan('◌')} ${this.message}`)
+            return
+        }
+
         const write = (text: string) => {
-            if (typeof process !== 'undefined' && process.stdout && process.stdout.write) {
+            if (process.stdout?.write) {
                 process.stdout.write(text)
-            } else {
-                console.log(text)
             }
         }
 
         this.interval = setInterval(() => {
-            write(`\r${pc.cyan(spinnerFrames[this.frameIndex])} ${this.message}`)
-            this.frameIndex = (this.frameIndex + 1) % spinnerFrames.length
+            const frame = pc.cyan(this.frames[this.frameIndex])
+            write(`\r${frame} ${this.message}`)
+            this.frameIndex = (this.frameIndex + 1) % this.frames.length
         }, 80)
     }
 
@@ -74,15 +102,16 @@ export class Spinner {
             this.interval = null
         }
 
-        const write = (text: string) => {
-            if (typeof process !== 'undefined' && process.stdout && process.stdout.write) {
-                process.stdout.write(text)
-            } else {
-                console.log(text)
+        if (isTTY()) {
+            const write = (text: string) => {
+                if (process.stdout?.write) {
+                    process.stdout.write(text)
+                }
             }
+            // Clear the line
+            write('\r' + ' '.repeat(this.message.length + 5) + '\r')
         }
 
-        write('\r' + ' '.repeat(this.message.length + 5) + '\r')
         if (finalMessage) {
             console.log(finalMessage)
         }
@@ -95,9 +124,68 @@ export class Spinner {
     fail(message: string): void {
         this.stop(`${pc.red('✗')} ${message}`)
     }
+
+    update(message: string): void {
+        this.message = message
+    }
 }
 
-// Styled output functions
+// Sleep utility
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Animated logo with progressive draw effect
+export async function animateLogo(): Promise<void> {
+    if (!isTTY()) {
+        showLogo()
+        return
+    }
+
+    console.clear()
+
+    // Draw border first
+    console.log(pc.cyan('╔' + '═'.repeat(55) + '╗'))
+    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
+
+    // Progressive reveal of each logo line
+    for (let i = 0; i < LOGO_LINES.length; i++) {
+        const line = LOGO_LINES[i]
+        process.stdout.write(pc.cyan('║') + '  ')
+
+        // Reveal characters progressively
+        const chars = [...line]
+        const chunkSize = Math.ceil(chars.length / 8) // Reveal in 8 chunks for speed
+
+        for (let j = 0; j < chars.length; j += chunkSize) {
+            const chunk = chars.slice(j, j + chunkSize).join('')
+            process.stdout.write(zenithGradient(chunk))
+            await sleep(30)
+        }
+
+        console.log('  ' + pc.cyan('║'))
+    }
+
+    // Complete the box
+    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
+
+    // Animate tagline
+    process.stdout.write(pc.cyan('║') + ' '.repeat(10))
+    const taglineChars = [...TAGLINE]
+    for (let i = 0; i < taglineChars.length; i += 4) {
+        const chunk = taglineChars.slice(i, i + 4).join('')
+        process.stdout.write(pc.dim(chunk))
+        await sleep(20)
+    }
+    console.log(' '.repeat(10) + pc.cyan('║'))
+
+    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
+    console.log(pc.cyan('╚' + '═'.repeat(55) + '╝'))
+
+    await sleep(150)
+}
+
+// Show static logo
 export function showLogo(): void {
     console.log(LOGO)
 }
@@ -106,6 +194,24 @@ export function showCompactLogo(): void {
     console.log(LOGO_COMPACT)
 }
 
+// Completion animation with pulse effect
+export async function showCompletionAnimation(): Promise<void> {
+    if (!isTTY()) {
+        console.log(`${pc.green('✓')} ${pc.bold('Done!')}`)
+        return
+    }
+
+    const frames = ['✓', '✨', '✓', '✨', '✓']
+    const colors = [pc.green, pc.yellow, pc.green, pc.yellow, pc.green]
+
+    for (let i = 0; i < frames.length; i++) {
+        process.stdout.write(`\r${colors[i](frames[i])} ${pc.bold('Done!')}`)
+        await sleep(100)
+    }
+    console.log()
+}
+
+// Styled output functions
 export function header(text: string): void {
     console.log(`\n${pc.bold(pc.cyan('▸'))} ${pc.bold(text)}\n`)
 }
@@ -142,33 +248,34 @@ export function bold(text: string): string {
     return pc.bold(text)
 }
 
-// Animated intro
+// Animated intro sequence
 export async function showIntro(): Promise<void> {
-    // Clear screen in a cross-runtime way
-    console.clear()
-    showLogo()
-    await sleep(300)
+    await animateLogo()
 }
 
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
+// Next steps box with dynamic package manager
+export function showNextSteps(projectName: string, packageManager: string = 'bun'): void {
+    const pm = packageManager
+    const runCmd = pm === 'npm' ? 'npm run dev' : `${pm} run dev`
 
-// Next steps box
-export function showNextSteps(projectName: string): void {
-    const padding = Math.max(0, 40 - projectName.length)
+    // Calculate padding for alignment
+    const cdLine = `cd ${projectName}`
+    const maxLineLen = 45
+    const cdPadding = Math.max(1, maxLineLen - cdLine.length - 6)
+    const runPadding = Math.max(1, maxLineLen - runCmd.length - 6)
+
     console.log(`
-${pc.cyan('┌─────────────────────────────────────────────────────────┐')}
-${pc.cyan('│')}                                                         ${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.green('✨')} ${pc.bold('Your Zenith app is ready!')}                         ${pc.cyan('│')}
-${pc.cyan('│')}                                                         ${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.dim('Next steps:')}                                          ${pc.cyan('│')}
-${pc.cyan('│')}                                                         ${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold(`cd ${projectName}`)}${' '.repeat(padding)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold('bun run dev')}                                       ${pc.cyan('│')}
-${pc.cyan('│')}                                                         ${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.dim('Then open')} ${pc.underline(pc.blue('http://localhost:3000'))}                  ${pc.cyan('│')}
-${pc.cyan('│')}                                                         ${pc.cyan('│')}
-${pc.cyan('└─────────────────────────────────────────────────────────┘')}
+${pc.cyan('┌' + '─'.repeat(50) + '┐')}
+${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
+${pc.cyan('│')}   ${pc.green('✨')} ${zenithGradient.multiline(pc.bold('Your Zenith app is ready!'))}${' '.repeat(17)}${pc.cyan('│')}
+${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
+${pc.cyan('│')}   ${pc.dim('Next steps:')}${' '.repeat(36)}${pc.cyan('│')}
+${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
+${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold(cdLine)}${' '.repeat(cdPadding)}${pc.cyan('│')}
+${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold(runCmd)}${' '.repeat(runPadding)}${pc.cyan('│')}
+${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
+${pc.cyan('│')}   ${pc.dim('Then open')} ${pc.underline(pc.blue('http://localhost:3000'))}${' '.repeat(9)}${pc.cyan('│')}
+${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
+${pc.cyan('└' + '─'.repeat(50) + '┘')}
 `)
 }

@@ -11,8 +11,8 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
 import { execSync } from 'node:child_process'
-import * as readline from 'node:readline'
 import * as brand from './branding.js'
+import * as prompts from './prompts.js'
 
 export interface ProjectOptions {
     name: string
@@ -22,7 +22,7 @@ export interface ProjectOptions {
 }
 
 // Version constant
-const VERSION = '0.4.2'
+const VERSION = '0.4.3'
 
 // GitHub repository info
 const GITHUB_REPO = 'zenithbuild/create-zenith'
@@ -30,14 +30,28 @@ const TEMPLATE_PATH = 'examples/starter'
 
 /**
  * Detect which package manager is available
- * Returns 'bun' | 'npm' for consistent install behavior
+ * Returns 'bun' | 'pnpm' | 'yarn' | 'npm'
  */
-function detectPackageManager(): 'bun' | 'npm' {
+function detectPackageManager(): 'bun' | 'pnpm' | 'yarn' | 'npm' {
+    // Check npm_config_user_agent for the invoking package manager
+    const userAgent = process.env.npm_config_user_agent || ''
+
+    if (userAgent.includes('bun')) return 'bun'
+    if (userAgent.includes('pnpm')) return 'pnpm'
+    if (userAgent.includes('yarn')) return 'yarn'
+    if (userAgent.includes('npm')) return 'npm'
+
+    // Fallback: check what's available
     try {
         execSync('bun --version', { stdio: 'pipe' })
         return 'bun'
     } catch {
-        return 'npm'
+        try {
+            execSync('pnpm --version', { stdio: 'pipe' })
+            return 'pnpm'
+        } catch {
+            return 'npm'
+        }
     }
 }
 
@@ -51,76 +65,6 @@ function hasGit(): boolean {
     } catch {
         return false
     }
-}
-
-/**
- * Check if running in interactive mode (TTY)
- */
-function isInteractive(): boolean {
-    return Boolean(process.stdin.isTTY)
-}
-
-/**
- * Creates a single readline interface for the entire session.
- * This avoids Bun's issue with multiple createInterface calls.
- */
-let rl: readline.Interface | null = null
-
-function getReadlineInterface(): readline.Interface {
-    if (!rl) {
-        rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-            terminal: process.stdin.isTTY
-        })
-    }
-    return rl
-}
-
-function closeReadlineInterface(): void {
-    if (rl) {
-        rl.close()
-        rl = null
-    }
-}
-
-/**
- * Interactive readline prompt helper
- * Uses a single persistent readline interface to avoid Bun issues
- */
-async function prompt(question: string, defaultValue?: string): Promise<string> {
-    // If not interactive, return default immediately
-    if (!isInteractive()) {
-        return defaultValue || ''
-    }
-
-    const iface = getReadlineInterface()
-
-    const displayQuestion = defaultValue
-        ? `${question} ${brand.dim(`(${defaultValue})`)}: `
-        : `${question}: `
-
-    return new Promise((resolve) => {
-        iface.question(displayQuestion, (answer: string) => {
-            resolve(answer.trim() || defaultValue || '')
-        })
-    })
-}
-
-/**
- * Yes/No prompt helper
- */
-async function confirm(question: string, defaultYes: boolean = true): Promise<boolean> {
-    // If not interactive, return default
-    if (!isInteractive()) {
-        return defaultYes
-    }
-
-    const hint = defaultYes ? 'Y/n' : 'y/N'
-    const answer = await prompt(`${question} ${brand.dim(`(${hint})`)}`)
-
-    if (!answer) return defaultYes
-    return answer.toLowerCase().startsWith('y')
 }
 
 /**
@@ -182,37 +126,47 @@ async function downloadTemplate(targetDir: string): Promise<void> {
 async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
     // Project name - REQUIRED
     let name = providedName
+
     if (!name) {
-        if (isInteractive()) {
-            name = await prompt(brand.highlight('Project name'))
+        const nameResult = await prompts.text({
+            message: 'What is your project named?',
+            placeholder: 'my-zenith-app',
+            validate: (value) => {
+                if (!value) return 'Project name is required'
+                if (fs.existsSync(path.resolve(process.cwd(), value))) {
+                    return `Directory "${value}" already exists`
+                }
+            }
+        })
+
+        if (prompts.isCancel(nameResult)) {
+            prompts.handleCancel()
         }
-        if (!name) {
-            brand.error('Project name is required')
-            console.log('')
-            console.log('Usage: create-zenith <project-name>')
-            console.log('')
-            console.log('Examples:')
-            console.log('  npx create-zenith my-app')
-            console.log('  bunx create-zenith my-app')
-            process.exit(1)
-        }
+
+        name = nameResult as string
+    }
+
+    if (!name) {
+        brand.error('Project name is required')
+        console.log('')
+        console.log('Usage: create-zenith <project-name>')
+        console.log('')
+        console.log('Examples:')
+        console.log('  npx create-zenith my-app')
+        console.log('  bunx create-zenith my-app')
+        process.exit(1)
     }
 
     // CRITICAL: Use process.cwd() to resolve the target directory
-    // This ensures the CLI works from ANY location
     const targetDir = path.resolve(process.cwd(), name)
     if (fs.existsSync(targetDir)) {
         brand.error(`Directory "${name}" already exists`)
         process.exit(1)
     }
 
-    console.log('')
-    brand.info(`Creating ${brand.bold(name)} in ${brand.dim(targetDir)}`)
-    console.log('')
-
-    // If not interactive, use defaults
-    if (!isInteractive()) {
-        brand.info('Non-interactive mode detected, using defaults...')
+    // If not TTY, use defaults
+    if (!brand.isTTY()) {
+        prompts.log.info('Non-interactive mode detected, using defaults...')
         return {
             name,
             eslint: true,
@@ -221,23 +175,30 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
         }
     }
 
-    // ESLint
-    const eslint = await confirm('Add ESLint for code linting?', true)
+    // Interactive prompts with visual indicators
+    const eslintResult = await prompts.confirm({
+        message: 'Add ESLint for code linting?',
+        initialValue: true
+    })
+    if (prompts.isCancel(eslintResult)) prompts.handleCancel()
 
-    // Prettier
-    const prettier = await confirm('Add Prettier for code formatting?', true)
+    const prettierResult = await prompts.confirm({
+        message: 'Add Prettier for code formatting?',
+        initialValue: true
+    })
+    if (prompts.isCancel(prettierResult)) prompts.handleCancel()
 
-    // TypeScript path aliases
-    const pathAlias = await confirm('Add TypeScript path alias (@/*)?', true)
-
-    // Close readline after all prompts are done
-    closeReadlineInterface()
+    const pathAliasResult = await prompts.confirm({
+        message: 'Add TypeScript path alias (@/*)?',
+        initialValue: true
+    })
+    if (prompts.isCancel(pathAliasResult)) prompts.handleCancel()
 
     return {
         name,
-        eslint,
-        prettier,
-        pathAlias
+        eslint: eslintResult as boolean,
+        prettier: prettierResult as boolean,
+        pathAlias: pathAliasResult as boolean
     }
 }
 
@@ -307,29 +268,25 @@ async function createProject(options: ProjectOptions): Promise<void> {
  * Main create command
  */
 async function create(appName?: string): Promise<void> {
-    // Show branded intro (skip clear if not interactive to preserve context)
-    if (isInteractive()) {
-        await brand.showIntro()
-    } else {
-        brand.showLogo()
-    }
-    brand.header('Create a new Zenith app')
+    // Show branded animated intro
+    await prompts.intro()
 
     // Gather project options
     const options = await gatherOptions(appName)
 
     console.log('')
-    const spinner = new brand.Spinner('Downloading starter template...')
-    spinner.start()
+    prompts.log.step(`Creating ${brand.bold(options.name)}...`)
+
+    // Create project with spinner
+    const s = prompts.spinner()
+    s.start('Downloading starter template...')
 
     try {
-        // Create project
         await createProject(options)
-        spinner.succeed('Project created')
+        s.stop('Project created')
 
         // Install dependencies
-        const installSpinner = new brand.Spinner('Installing dependencies...')
-        installSpinner.start()
+        s.start('Installing dependencies...')
 
         const targetDir = path.resolve(process.cwd(), options.name)
         const pm = detectPackageManager()
@@ -340,18 +297,17 @@ async function create(appName?: string): Promise<void> {
                 cwd: targetDir,
                 stdio: 'pipe'
             })
-            installSpinner.succeed('Dependencies installed')
+            s.stop('Dependencies installed')
         } catch {
-            installSpinner.fail('Could not install dependencies automatically')
+            s.stop('Could not install dependencies automatically')
             brand.warn(`Run "${pm} install" manually in the project directory`)
         }
 
-        // Show success message
-        brand.success('Project created with Zenith Starter Template!')
-        brand.showNextSteps(options.name)
+        // Show completion with animation and next steps
+        await prompts.outro(options.name, pm)
 
     } catch (err: unknown) {
-        spinner.fail('Failed to create project')
+        s.stop('Failed to create project')
         const message = err instanceof Error ? err.message : String(err)
         brand.error(message)
         process.exit(1)

@@ -7,8 +7,7 @@
         "create-zenith": "dist/cli.js"
     },
     "files": [
-        "dist",
-        "examples/starter"
+        "dist"
     ],
     "scripts": {
         "build": "bun build src/index.ts --outdir dist --target node --format esm && node -e \"const fs=require('fs');const c=fs.readFileSync('dist/index.js','utf8');fs.writeFileSync('dist/cli.js','#!/usr/bin/env node\\n'+c);fs.chmodSync('dist/cli.js','755')\"",

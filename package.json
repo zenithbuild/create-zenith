@@ -1,24 +1,40 @@
 {
     "name": "create-zenith",
-    "version": "0.2.3",
-    "description": "Thin resolver for bun/npm create zenith - delegates to @zenithbuild/cli",
-    "bin": {
-        "create-zenith": "./index.js"
-    },
+    "version": "0.3.0",
+    "description": "Create a new Zenith application - the modern reactive web framework",
     "type": "module",
-    "license": "MIT",
-    "author": "Zenith Team",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:zenithbuild/create-zenith.git"
+    "bin": {
+        "create-zenith": "./dist/cli.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "bun build src/index.ts --outdir dist --target node --format esm && node -e \"const fs=require('fs');const c=fs.readFileSync('dist/index.js','utf8');fs.writeFileSync('dist/cli.js','#!/usr/bin/env node\\n'+c);fs.chmodSync('dist/cli.js','755')\"",
+        "prepublishOnly": "npm run build",
+        "test": "node dist/cli.js --help"
     },
     "keywords": [
         "zenith",
         "create",
         "scaffold",
-        "cli"
+        "cli",
+        "framework",
+        "reactive"
     ],
+    "author": "Zenith Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:zenithbuild/create-zenith.git"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "dependencies": {
-        "@zenithbuild/cli": "github:zenithbuild/zenith-cli"
+        "picocolors": "^1.1.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0"
     }
 }

@@ -25,7 +25,7 @@ export async function text(opts: {
     message: string
     placeholder?: string
     defaultValue?: string
-    validate?: (value: string) => string | void
+    validate?: (value: string) => string | undefined
 }): Promise<string | symbol> {
     if (!brand.isTTY()) {
         return opts.defaultValue || ''
@@ -68,7 +68,7 @@ export async function select<T extends string>(opts: {
         return opts.initialValue || opts.options[0]?.value
     }
 
-    return await p.select(opts) as T | symbol
+    return await p.select(opts as any) as T | symbol
 }
 
 /**

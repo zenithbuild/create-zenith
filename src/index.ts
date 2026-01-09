@@ -26,7 +26,7 @@ import {
 } from './templates.js'
 
 // Version constant
-const VERSION = '0.3.0'
+const VERSION = '0.4.0'
 
 /**
  * Detect which package manager is available
@@ -42,22 +42,54 @@ function detectPackageManager(): 'bun' | 'npm' {
 }
 
 /**
+ * Check if running in interactive mode (TTY)
+ */
+function isInteractive(): boolean {
+    return Boolean(process.stdin.isTTY)
+}
+
+/**
+ * Creates a single readline interface for the entire session.
+ * This avoids Bun's issue with multiple createInterface calls.
+ */
+let rl: readline.Interface | null = null
+
+function getReadlineInterface(): readline.Interface {
+    if (!rl) {
+        rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            terminal: process.stdin.isTTY
+        })
+    }
+    return rl
+}
+
+function closeReadlineInterface(): void {
+    if (rl) {
+        rl.close()
+        rl = null
+    }
+}
+
+/**
  * Interactive readline prompt helper
- * Works identically on Bun and Node
+ * Uses a single persistent readline interface to avoid Bun issues
  */
 async function prompt(question: string, defaultValue?: string): Promise<string> {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    })
+    // If not interactive, return default immediately
+    if (!isInteractive()) {
+        return defaultValue || ''
+    }
+
+    const iface = getReadlineInterface()
 
     const displayQuestion = defaultValue
         ? `${question} ${brand.dim(`(${defaultValue})`)}: `
         : `${question}: `
 
     return new Promise((resolve) => {
-        rl.question(displayQuestion, (answer: string) => {
-            rl.close()
+        iface.question(displayQuestion, (answer: string) => {
             resolve(answer.trim() || defaultValue || '')
         })
     })
@@ -67,6 +99,11 @@ async function prompt(question: string, defaultValue?: string): Promise<string> 
  * Yes/No prompt helper
  */
 async function confirm(question: string, defaultYes: boolean = true): Promise<boolean> {
+    // If not interactive, return default
+    if (!isInteractive()) {
+        return defaultYes
+    }
+
     const hint = defaultYes ? 'Y/n' : 'y/N'
     const answer = await prompt(`${question} ${brand.dim(`(${hint})`)}`)
 
@@ -78,12 +115,20 @@ async function confirm(question: string, defaultYes: boolean = true): Promise<bo
  * Gather all project options through interactive prompts
  */
 async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
-    // Project name
+    // Project name - REQUIRED
     let name = providedName
     if (!name) {
-        name = await prompt(brand.highlight('Project name'))
+        if (isInteractive()) {
+            name = await prompt(brand.highlight('Project name'))
+        }
         if (!name) {
             brand.error('Project name is required')
+            console.log('')
+            console.log('Usage: create-zenith <project-name>')
+            console.log('')
+            console.log('Examples:')
+            console.log('  npx create-zenith my-app')
+            console.log('  bunx create-zenith my-app')
             process.exit(1)
         }
     }
@@ -100,6 +145,18 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
     brand.info(`Creating ${brand.bold(name)} in ${brand.dim(targetDir)}`)
     console.log('')
 
+    // If not interactive, use defaults
+    if (!isInteractive()) {
+        brand.info('Non-interactive mode detected, using defaults...')
+        return {
+            name,
+            directory: 'app',
+            eslint: true,
+            prettier: true,
+            pathAlias: true
+        }
+    }
+
     // Directory structure
     const useSrc = await confirm('Use src/ directory instead of app/?', false)
     const directory = useSrc ? 'src' : 'app'
@@ -112,6 +169,9 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
 
     // TypeScript path aliases
     const pathAlias = await confirm('Add TypeScript path alias (@/*)?', true)
+
+    // Close readline after all prompts are done
+    closeReadlineInterface()
 
     return {
         name,
@@ -207,8 +267,12 @@ async function generateConfigs(options: ProjectOptions): Promise<void> {
  * Main create command
  */
 async function create(appName?: string): Promise<void> {
-    // Show branded intro
-    await brand.showIntro()
+    // Show branded intro (skip clear if not interactive to preserve context)
+    if (isInteractive()) {
+        await brand.showIntro()
+    } else {
+        brand.showLogo()
+    }
     brand.header('Create a new Zenith app')
 
     // Gather project options

@@ -698,7 +698,7 @@ bun.lock
 }
 
 // src/index.ts
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 function detectPackageManager() {
   try {
     execSync("bun --version", { stdio: "pipe" });
@@ -707,20 +707,42 @@ function detectPackageManager() {
     return "npm";
   }
 }
+function isInteractive() {
+  return Boolean(process.stdin.isTTY);
+}
+var rl = null;
+function getReadlineInterface() {
+  if (!rl) {
+    rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: process.stdin.isTTY
+    });
+  }
+  return rl;
+}
+function closeReadlineInterface() {
+  if (rl) {
+    rl.close();
+    rl = null;
+  }
+}
 async function prompt(question, defaultValue) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+  if (!isInteractive()) {
+    return defaultValue || "";
+  }
+  const iface = getReadlineInterface();
   const displayQuestion = defaultValue ? `${question} ${dim(`(${defaultValue})`)}: ` : `${question}: `;
   return new Promise((resolve2) => {
-    rl.question(displayQuestion, (answer) => {
-      rl.close();
+    iface.question(displayQuestion, (answer) => {
       resolve2(answer.trim() || defaultValue || "");
     });
   });
 }
 async function confirm(question, defaultYes = true) {
+  if (!isInteractive()) {
+    return defaultYes;
+  }
   const hint = defaultYes ? "Y/n" : "y/N";
   const answer = await prompt(`${question} ${dim(`(${hint})`)}`);
   if (!answer)
@@ -730,9 +752,17 @@ async function confirm(question, defaultYes = true) {
 async function gatherOptions(providedName) {
   let name = providedName;
   if (!name) {
-    name = await prompt(highlight("Project name"));
+    if (isInteractive()) {
+      name = await prompt(highlight("Project name"));
+    }
     if (!name) {
       error("Project name is required");
+      console.log("");
+      console.log("Usage: create-zenith <project-name>");
+      console.log("");
+      console.log("Examples:");
+      console.log("  npx create-zenith my-app");
+      console.log("  bunx create-zenith my-app");
       process.exit(1);
     }
   }
@@ -744,11 +774,22 @@ async function gatherOptions(providedName) {
   console.log("");
   info(`Creating ${bold(name)} in ${dim(targetDir)}`);
   console.log("");
+  if (!isInteractive()) {
+    info("Non-interactive mode detected, using defaults...");
+    return {
+      name,
+      directory: "app",
+      eslint: true,
+      prettier: true,
+      pathAlias: true
+    };
+  }
   const useSrc = await confirm("Use src/ directory instead of app/?", false);
   const directory = useSrc ? "src" : "app";
   const eslint = await confirm("Add ESLint for code linting?", true);
   const prettier = await confirm("Add Prettier for code formatting?", true);
   const pathAlias = await confirm("Add TypeScript path alias (@/*)?", true);
+  closeReadlineInterface();
   return {
     name,
     directory,
@@ -784,7 +825,11 @@ async function generateConfigs(options) {
   }
 }
 async function create(appName) {
-  await showIntro();
+  if (isInteractive()) {
+    await showIntro();
+  } else {
+    showLogo();
+  }
   header("Create a new Zenith app");
   const options = await gatherOptions(appName);
   console.log("");

@@ -11,22 +11,25 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { execSync } from 'node:child_process'
 import * as readline from 'node:readline'
+import { fileURLToPath } from 'node:url'
 import * as brand from './branding.js'
-import {
-    type ProjectOptions,
-    generatePackageJson,
-    generateIndexPage,
-    generateDefaultLayout,
-    generateGlobalCSS,
-    generateGitignore,
-    generateTsconfig,
-    generateEslintConfig,
-    generatePrettierConfig,
-    generatePrettierIgnore
-} from './templates.js'
+export interface ProjectOptions {
+    name: string
+    directory: 'src'
+    eslint: boolean
+    prettier: boolean
+    pathAlias: boolean
+}
 
 // Version constant
 const VERSION = '0.4.0'
+
+// Template directory resolution
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+// When bundled, this will be relative to dist/cli.js or src/index.ts
+// Both paths use the same relative depth to examples/starter
+const templateDir = path.resolve(__dirname, '..', 'examples', 'starter')
 
 /**
  * Detect which package manager is available
@@ -150,16 +153,15 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
         brand.info('Non-interactive mode detected, using defaults...')
         return {
             name,
-            directory: 'app',
+            directory: 'src',
             eslint: true,
             prettier: true,
             pathAlias: true
         }
     }
 
-    // Directory structure
-    const useSrc = await confirm('Use src/ directory instead of app/?', false)
-    const directory = useSrc ? 'src' : 'app'
+    // Directory structure - Enforce src/
+    const directory = 'src'
 
     // ESLint
     const eslint = await confirm('Add ESLint for code linting?', true)
@@ -186,81 +188,73 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
  * Create the project directory structure and files
  */
 async function createProject(options: ProjectOptions): Promise<void> {
-    // CRITICAL: Use process.cwd() for output directory
     const targetDir = path.resolve(process.cwd(), options.name)
-    const baseDir = options.directory
-    const appDir = path.join(targetDir, baseDir)
 
-    // Create directories
-    fs.mkdirSync(targetDir, { recursive: true })
-    fs.mkdirSync(path.join(appDir, 'pages'), { recursive: true })
-    fs.mkdirSync(path.join(appDir, 'layouts'), { recursive: true })
-    fs.mkdirSync(path.join(appDir, 'components'), { recursive: true })
-    fs.mkdirSync(path.join(appDir, 'styles'), { recursive: true })
+    // Ensure template exists
+    if (!fs.existsSync(templateDir)) {
+        throw new Error(`Template not found at ${templateDir}. Please ensure the examples/starter directory exists.`)
+    }
 
-    // package.json
-    fs.writeFileSync(
-        path.join(targetDir, 'package.json'),
-        generatePackageJson(options)
-    )
+    // Copy the entire starter template
+    fs.cpSync(templateDir, targetDir, {
+        recursive: true,
+        filter: (src) => {
+            const basename = path.basename(src)
+            return basename !== 'node_modules' && basename !== 'dist' && basename !== 'bun.lock' && basename !== 'package-lock.json'
+        }
+    })
 
-    // index.zen
-    fs.writeFileSync(
-        path.join(targetDir, baseDir, 'pages', 'index.zen'),
-        generateIndexPage()
-    )
+    // Update package.json name and version
+    const pkgPath = path.join(targetDir, 'package.json')
+    if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+        pkg.name = options.name
+        pkg.version = '0.1.0'
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4))
+    }
 
-    // DefaultLayout.zen
-    fs.writeFileSync(
-        path.join(targetDir, baseDir, 'layouts', 'DefaultLayout.zen'),
-        generateDefaultLayout()
-    )
+    // Handle directory structure (always src, so no renaming needed)
 
-    // global.css
-    fs.writeFileSync(
-        path.join(appDir, 'styles', 'global.css'),
-        generateGlobalCSS()
-    )
+    // Handle ESLint
+    if (!options.eslint) {
+        const eslintPath = path.join(targetDir, '.eslintrc.json')
+        if (fs.existsSync(eslintPath)) fs.unlinkSync(eslintPath)
+    }
 
-    // .gitignore
-    fs.writeFileSync(
-        path.join(targetDir, '.gitignore'),
-        generateGitignore()
-    )
+    // Handle Prettier
+    if (!options.prettier) {
+        const prettierRc = path.join(targetDir, '.prettierrc')
+        const prettierIgnore = path.join(targetDir, '.prettierignore')
+        if (fs.existsSync(prettierRc)) fs.unlinkSync(prettierRc)
+        if (fs.existsSync(prettierIgnore)) fs.unlinkSync(prettierIgnore)
+    }
+
+    // Update tsconfig.json if path alias needs updating
+    const tsconfigPath = path.join(targetDir, 'tsconfig.json')
+    if (fs.existsSync(tsconfigPath)) {
+        const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8'))
+
+        // Update path alias
+        if (options.pathAlias) {
+            tsconfig.compilerOptions = tsconfig.compilerOptions || {}
+            tsconfig.compilerOptions.baseUrl = '.'
+            tsconfig.compilerOptions.paths = {
+                '@/*': [`./src/*`]
+            }
+        } else if (tsconfig.compilerOptions && tsconfig.compilerOptions.paths) {
+            delete tsconfig.compilerOptions.paths
+        }
+
+        fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 4))
+    }
 }
 
 /**
- * Generate configuration files based on options
+ * Generate configuration files (no longer used as they are in the template)
+ * Kept for backward compatibility or future use
  */
 async function generateConfigs(options: ProjectOptions): Promise<void> {
-    const targetDir = path.resolve(process.cwd(), options.name)
-
-    // tsconfig.json
-    fs.writeFileSync(
-        path.join(targetDir, 'tsconfig.json'),
-        generateTsconfig(options)
-    )
-
-    // ESLint config
-    if (options.eslint) {
-        fs.writeFileSync(
-            path.join(targetDir, '.eslintrc.json'),
-            generateEslintConfig()
-        )
-    }
-
-    // Prettier config
-    if (options.prettier) {
-        fs.writeFileSync(
-            path.join(targetDir, '.prettierrc'),
-            generatePrettierConfig()
-        )
-
-        fs.writeFileSync(
-            path.join(targetDir, '.prettierignore'),
-            generatePrettierIgnore()
-        )
-    }
+    // Files are already copied from template and adjusted in createProject
 }
 
 /**
@@ -313,6 +307,7 @@ async function create(appName?: string): Promise<void> {
         }
 
         // Show success message
+        brand.success('Project created with Zenith Starter Template!')
         brand.showNextSteps(options.name)
 
     } catch (err: unknown) {

@@ -7,11 +7,14 @@
         "create-zenith": "dist/cli.js"
     },
     "files": [
-        "dist"
+        "dist",
+        "examples/starter"
     ],
     "scripts": {
         "build": "bun build src/index.ts --outdir dist --target node --format esm && node -e \"const fs=require('fs');const c=fs.readFileSync('dist/index.js','utf8');fs.writeFileSync('dist/cli.js','#!/usr/bin/env node\\n'+c);fs.chmodSync('dist/cli.js','755')\"",
         "prepublishOnly": "npm run build",
+        "create": "bun src/index.ts",
+        "example": "rm -rf examples/test-template && bun src/index.ts test-template && mv test-template examples/",
         "test": "node dist/cli.js --help"
     },
     "keywords": [

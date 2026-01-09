@@ -71,7 +71,7 @@ Your app is now running with full reactivity! Try clicking the counter button to
 
 ```
 my-app/
-├── app/
+├── src/
 │   ├── pages/           # Your routes (index.zen = /)
 │   ├── layouts/         # Layout components
 │   └── components/      # Reusable components
@@ -154,5 +154,28 @@ MIT © Zenith Team
 
 ---
 
+## 🛠️ Local Development
+
+If you are developing `create-zenith` locally, use the following commands to test your changes without needing to publish to npm:
+
+### Run from Source
+```bash
+# Uses the local src/index.ts directly
+npm run create my-test-app
+```
+
+### Spin up a Template
+```bash
+# Scaffolds a project into the examples/ directory
+npm run example
+```
+
+### Link Globally
+To use your local version with `bun create zenith` anywhere on your machine:
+```bash
+bun link
+```
+
+---
+
 **Made with ⚡ by the Zenith Team**
-# create-zenith

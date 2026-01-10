@@ -4,9 +4,9 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "zen-dev",
-        "build": "zen-build",
-        "preview": "zen-preview",
+        "dev": "zenith-dev",
+        "build": "zenith build",
+        "preview": "zenith preview",
         "test": "bun test",
         "lint": "eslint .",
         "format": "prettier --write ."

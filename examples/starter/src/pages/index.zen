@@ -1,7 +1,16 @@
 <script setup="ts">
+
+    state count = 0 
     zenOnMount(() => {
         console.log('🚀 Welcome to the Zenith Starter Template!')
     })
+
+    function increment() {
+        count = count + 1
+    }
+function decrement() {
+        count = count - 1
+    }
 </script>
 
 <DefaultLayout title="Zenith | The Modern Reactive Framework">
@@ -10,7 +19,7 @@
         <section class="hero-section">
             <div class="hero-content">
                 <div class="logo-badge">
-                    <img src="/logo.svg" alt="Zenith Logo" class="hero-logo">
+                    <img src="/logo.svg" alt="Zenith Flare Logo" class="hero-logo" width="80" height="80" fetchpriority="high">
                 </div>
                 <h1 class="hero-title">
                     Build faster with <span class="gradient-text">Zenith</span>
@@ -20,10 +29,11 @@
                     simplicity, and beautiful developer experience.
                 </p>
                 <div class="hero-actions">
-                    <a href="https://github.com/judahsullivan" target="_blank" class="btn btn-primary">
+                    <button onclick="increment" class="btn btn-primary"> Count: {count}</button>
+                    <a href="https://github.com/judahsullivan" target="_blank" class="btn btn-primary" rel="noopener">
                         View GitHub Profile
                     </a>
-                    <a href="https://github.com/zenithbuild/zenith" target="_blank" class="btn btn-outline">
+                    <a href="https://github.com/zenithbuild/zenith" target="_blank" class="btn btn-outline" rel="noopener">
                         Explore Github
                     </a>
                 </div>
@@ -39,7 +49,7 @@
                     <p class="card-description">
                         Visit our official repository to learn about the philosophy and vision behind Zenith.
                     </p>
-                    <span class="card-link">Visit Project →</span>
+                    <span class="card-link" aria-hidden="true">Visit Project →</span>
                 </a>
 
                 <a href="https://github.com/zenithbuild/zenith" target="_blank" class="card">
@@ -48,7 +58,7 @@
                     <p class="card-description">
                         Everything you need to know about Zenith components, state management, and more.
                     </p>
-                    <span class="card-link">Explore Docs →</span>
+                    <span class="card-link" aria-hidden="true">Explore Docs →</span>
                 </a>
 
                 <a href="https://github.com/zenithbuild/zenith" target="_blank" class="card">
@@ -57,7 +67,7 @@
                     <p class="card-description">
                         Jump straight into the code. Clone the repository and start building your next idea.
                     </p>
-                    <span class="card-link">Clone Repo →</span>
+                    <span class="card-link" aria-hidden="true">Clone Repo →</span>
                 </a>
             </div>
         </section>
@@ -188,6 +198,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
         color: inherit;
+        contain: layout paint;
     }
 
     .card:hover {

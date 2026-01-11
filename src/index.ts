@@ -19,6 +19,7 @@ export interface ProjectOptions {
     eslint: boolean
     prettier: boolean
     pathAlias: boolean
+    tailwind: boolean
 }
 
 // Version constant
@@ -26,7 +27,8 @@ const VERSION = '0.4.3'
 
 // GitHub repository info
 const GITHUB_REPO = 'zenithbuild/create-zenith'
-const TEMPLATE_PATH = 'examples/starter'
+const DEFAULT_TEMPLATE = 'examples/starter'
+const TAILWIND_TEMPLATE = 'examples/starter-tailwindcss'
 
 /**
  * Detect which package manager is available
@@ -70,7 +72,7 @@ function hasGit(): boolean {
 /**
  * Download template from GitHub
  */
-async function downloadTemplate(targetDir: string): Promise<void> {
+async function downloadTemplate(targetDir: string, templatePath: string): Promise<void> {
     const tempDir = path.join(os.tmpdir(), `zenith-template-${Date.now()}`)
 
     try {
@@ -79,13 +81,13 @@ async function downloadTemplate(targetDir: string): Promise<void> {
             execSync(`git clone --depth 1 --filter=blob:none --sparse https://github.com/${GITHUB_REPO}.git "${tempDir}"`, {
                 stdio: 'pipe'
             })
-            execSync(`git sparse-checkout set ${TEMPLATE_PATH}`, {
+            execSync(`git sparse-checkout set ${templatePath}`, {
                 cwd: tempDir,
                 stdio: 'pipe'
             })
 
             // Copy template contents to target
-            const templateSource = path.join(tempDir, TEMPLATE_PATH)
+            const templateSource = path.join(tempDir, templatePath)
             fs.cpSync(templateSource, targetDir, { recursive: true })
         } else {
             // Fallback: download tarball via curl/fetch
@@ -106,7 +108,7 @@ async function downloadTemplate(targetDir: string): Promise<void> {
             }
 
             // Copy template contents
-            const templateSource = path.join(tempDir, extractedDir, TEMPLATE_PATH)
+            const templateSource = path.join(tempDir, extractedDir, templatePath)
             fs.cpSync(templateSource, targetDir, { recursive: true })
 
             // Cleanup tarball
@@ -123,7 +125,7 @@ async function downloadTemplate(targetDir: string): Promise<void> {
 /**
  * Gather all project options through interactive prompts
  */
-async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
+async function gatherOptions(providedName?: string, withTailwind?: boolean): Promise<ProjectOptions> {
     // Project name - REQUIRED
     let name = providedName
 
@@ -171,11 +173,17 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
             name,
             eslint: true,
             prettier: true,
-            pathAlias: true
+            pathAlias: true,
+            tailwind: withTailwind ?? false
         }
     }
 
     // Interactive prompts with visual indicators
+    const tailwindResult = (withTailwind !== undefined) ? withTailwind : await prompts.confirm({
+        message: 'Add Tailwind CSS for styling?',
+        initialValue: true
+    })
+    if (prompts.isCancel(tailwindResult)) prompts.handleCancel()
     const eslintResult = await prompts.confirm({
         message: 'Add ESLint for code linting?',
         initialValue: true
@@ -198,7 +206,8 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
         name,
         eslint: eslintResult as boolean,
         prettier: prettierResult as boolean,
-        pathAlias: pathAliasResult as boolean
+        pathAlias: pathAliasResult as boolean,
+        tailwind: tailwindResult as boolean
     }
 }
 
@@ -207,9 +216,10 @@ async function gatherOptions(providedName?: string): Promise<ProjectOptions> {
  */
 async function createProject(options: ProjectOptions): Promise<void> {
     const targetDir = path.resolve(process.cwd(), options.name)
+    const templatePath = options.tailwind ? TAILWIND_TEMPLATE : DEFAULT_TEMPLATE
 
     // Download template from GitHub
-    await downloadTemplate(targetDir)
+    await downloadTemplate(targetDir, templatePath)
 
     // Update package.json
     const pkgPath = path.join(targetDir, 'package.json')
@@ -267,12 +277,12 @@ async function createProject(options: ProjectOptions): Promise<void> {
 /**
  * Main create command
  */
-async function create(appName?: string): Promise<void> {
+async function create(appName?: string, withTailwind?: boolean): Promise<void> {
     // Show branded animated intro
     await prompts.intro()
 
     // Gather project options
-    const options = await gatherOptions(appName)
+    const options = await gatherOptions(appName, withTailwind)
 
     console.log('')
     prompts.log.step(`Creating ${brand.bold(options.name)}...`)
@@ -326,8 +336,9 @@ if (args.includes('--help') || args.includes('-h')) {
     console.log('Usage: create-zenith [project-name]\n')
     console.log('Create a new Zenith application.\n')
     console.log('Options:')
-    console.log('  -h, --help     Show this help message')
-    console.log('  -v, --version  Show version number')
+    console.log('  -h, --help           Show this help message')
+    console.log('  -v, --version        Show version number')
+    console.log('  --with-tailwind      Initialize with Tailwind CSS v4 template')
     console.log('')
     console.log('Examples:')
     console.log('  npx create-zenith my-app')
@@ -345,8 +356,11 @@ if (args.includes('--version') || args.includes('-v')) {
 // Get project name from arguments (first non-flag argument)
 const projectName = args.find((arg: string) => !arg.startsWith('-'))
 
+// Check for Tailwind flag
+const withTailwind = args.includes('--with-tailwind') ? true : undefined
+
 // Run the create command
-create(projectName).catch((err: unknown) => {
+create(projectName, withTailwind).catch((err: unknown) => {
     brand.error(err instanceof Error ? err.message : String(err))
     process.exit(1)
 })

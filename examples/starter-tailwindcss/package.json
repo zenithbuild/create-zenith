@@ -1,0 +1,27 @@
+{
+    "name": "starter-tailwindcss",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css --watch & bun zen-dev",
+        "build": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css && bun zen-build",
+        "preview": "bun zen-preview",
+        "tailwind": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css",
+        "test": "bun test",
+        "lint": "eslint .",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "@zenithbuild/core": "^0.3.3"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.1.18",
+        "@types/bun": "^1.3.5",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
+        "eslint": "^9.39.2",
+        "prettier": "^3.7.4",
+        "tailwindcss": "^4.1.18"
+    }
+}

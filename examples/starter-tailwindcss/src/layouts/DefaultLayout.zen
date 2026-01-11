@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith | The Modern Reactive Framework</title>
+    <meta name="description" content="Zenith is a modern reactive framework for building high-performance web applications with simplicity and speed. Built for developers who value performance.">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preload LCP Assets -->
+    <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml">
+    <link rel="stylesheet" href="/zenith.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+</head>
+<body class="bg-background text-foreground font-body antialiased">
+    <div class="flex flex-col min-h-screen">
+        <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <nav class="container mx-auto max-w-[1200px] flex h-18 items-center justify-between px-8">
+                <a href="/" class="flex items-center gap-3 transition-opacity hover:opacity-80" aria-label="Zenith Home">
+                    <img src="/logo.svg" alt="" class="h-8 w-8" width="32" height="32">
+                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
+                        Zenith
+                    </span>
+                </a>
+                <div class="flex items-center gap-8">
+                    <a href="https://github.com/zenithbuild/zenith" target="_blank" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                        GitHub
+                    </a>
+                </div>
+            </nav>
+        </header>
+        
+        <main class="flex-1">
+            <slot />
+        </main>
+        
+        <footer class="border-t border-border bg-card py-16 px-8 text-muted-foreground">
+            <div class="container mx-auto max-w-[1200px] flex flex-col items-center gap-6">
+                <img src="/logo.svg" alt="" class="h-6 w-6 opacity-50 grayscale" width="24" height="24" loading="lazy">
+                <p class="text-sm">Built with ⚡ Zenith Framework</p>
+                <div class="flex gap-4">
+                    <a href="https://github.com/judahsullivan" target="_blank" class="text-sm transition-colors hover:text-primary">
+                        @judahsullivan
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

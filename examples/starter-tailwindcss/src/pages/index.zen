@@ -1,0 +1,83 @@
+<script setup="ts">
+
+    state count = 0 
+    zenOnMount(() => {
+        // Ready to build
+    })
+
+    function increment() {
+        count = count + 1
+    }
+    function decrement() {
+        count = count - 1
+    }
+</script>
+
+<DefaultLayout title="Zenith | The Modern Reactive Framework">
+    <div class="flex flex-col gap-16 pb-32 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.08)_0%,transparent_50%)]">
+        <!-- Hero Section -->
+        <section class="px-8 py-20 text-center relative">
+            <div class="mx-auto max-w-[800px] flex flex-col items-center gap-6">
+                <div class="mb-4 rounded-3xl border border-primary/10 bg-primary/5 p-6 animate-in zoom-in duration-700">
+                    <img src="/logo.svg" alt="Zenith Flare Logo" class="h-20 w-20" width="80" height="80" fetchpriority="high">
+                </div>
+                <h1 class="text-6xl md:text-7xl font-extrabold tracking-tight leading-tight animate-in slide-in-from-bottom duration-700 fade-in">
+                    Build faster with <span class="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">Zenith</span>
+                </h1>
+                <p class="text-xl text-muted-foreground max-w-[600px] leading-relaxed animate-in slide-in-from-bottom duration-1000 fade-in">
+                    The modern reactive framework for developers who value performance, 
+                    simplicity, and beautiful developer experience.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 mt-4 animate-in slide-in-from-bottom duration-1000 fade-in">
+                    <button onclick="increment" class="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90">
+                        Count: {count}
+                    </button>
+                    <a href="https://github.com/judahsullivan" target="_blank" class="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90" rel="noopener">
+                        View GitHub Profile
+                    </a>
+                    <a href="https://github.com/zenithbuild/zenith" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-border bg-background px-8 py-4 text-sm font-semibold text-foreground transition-all hover:bg-muted hover:border-muted-foreground/20" rel="noopener">
+                        Explore GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards Section -->
+        <section class="px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1100px] mx-auto">
+                <a href="https://github.com/zenithbuild/zenith" target="_blank" class="group flex flex-col gap-4 rounded-3xl border border-border bg-card p-8 transition-all hover:-translate-y-2 hover:border-primary/30 hover:bg-accent/5 hover:shadow-2xl hover:shadow-black/20">
+                    <div class="text-2xl" aria-hidden="true">🌐</div>
+                    <h2 class="text-2xl font-bold tracking-tight">Main Site</h2>
+                    <p class="text-muted-foreground leading-relaxed flex-grow">
+                        Visit our official repository to learn about the philosophy and vision behind Zenith.
+                    </p>
+                    <span class="text-sm font-bold text-primary transition-all group-hover:translate-x-1" aria-hidden="true">
+                        Visit Project →
+                    </span>
+                </a>
+
+                <a href="https://github.com/zenithbuild/zenith" target="_blank" class="group flex flex-col gap-4 rounded-3xl border border-border bg-card p-8 transition-all hover:-translate-y-2 hover:border-primary/30 hover:bg-accent/5 hover:shadow-2xl hover:shadow-black/20">
+                    <div class="text-2xl" aria-hidden="true">📚</div>
+                    <h2 class="text-2xl font-bold tracking-tight">Documentation</h2>
+                    <p class="text-muted-foreground leading-relaxed flex-grow">
+                        Everything you need to know about Zenith components, state management, and more.
+                    </p>
+                    <span class="text-sm font-bold text-primary transition-all group-hover:translate-x-1" aria-hidden="true">
+                        Explore Docs →
+                    </span>
+                </a>
+
+                <a href="https://github.com/zenithbuild/zenith" target="_blank" class="group flex flex-col gap-4 rounded-3xl border border-border bg-card p-8 transition-all hover:-translate-y-2 hover:border-primary/30 hover:bg-accent/5 hover:shadow-2xl hover:shadow-black/20">
+                    <div class="text-2xl" aria-hidden="true">🚀</div>
+                    <h2 class="text-2xl font-bold tracking-tight">Starter Template</h2>
+                    <p class="text-muted-foreground leading-relaxed flex-grow">
+                        Jump straight into the code. Clone the repository and start building your next idea.
+                    </p>
+                    <span class="text-sm font-bold text-primary transition-all group-hover:translate-x-1" aria-hidden="true">
+                        Clone Repo →
+                    </span>
+                </a>
+            </div>
+        </section>
+    </div>
+</DefaultLayout>

@@ -14,7 +14,12 @@
         "prepublishOnly": "npm run build",
         "create": "bun src/index.ts",
         "example": "rm -rf examples/test-template && bun src/index.ts test-template && mv test-template examples/",
-        "test": "node dist/cli.js --help"
+        "test": "node dist/cli.js --help",
+        "release": "bun run scripts/release.ts",
+        "release:dry": "bun run scripts/release.ts --dry-run",
+        "release:patch": "bun run scripts/release.ts --bump=patch",
+        "release:minor": "bun run scripts/release.ts --bump=minor",
+        "release:major": "bun run scripts/release.ts --bump=major"
     },
     "keywords": [
         "zenith",
@@ -33,6 +38,10 @@
     "engines": {
         "node": ">=18.0.0"
     },
+    "publishConfig": {
+        "access": "public"
+    },
+    "private": false,
     "dependencies": {
         "@clack/prompts": "^0.11.0",
         "gradient-string": "^3.0.0",

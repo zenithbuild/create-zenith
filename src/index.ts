@@ -23,7 +23,7 @@ export interface ProjectOptions {
 }
 
 // Version constant
-const VERSION = '0.4.3'
+const VERSION = '0.6.6'
 
 // GitHub repository info
 const GITHUB_REPO = 'zenithbuild/create-zenith'
@@ -151,7 +151,7 @@ async function gatherOptions(providedName?: string, withTailwind?: boolean): Pro
     if (!name) {
         brand.error('Project name is required')
         console.log('')
-        console.log('Usage: create-zenith <project-name>')
+        console.log('Usage: npx create-zenith <project-name>')
         console.log('')
         console.log('Examples:')
         console.log('  npx create-zenith my-app')
@@ -333,7 +333,7 @@ const args = process.argv.slice(2)
 // Handle help flag
 if (args.includes('--help') || args.includes('-h')) {
     brand.showCompactLogo()
-    console.log('Usage: create-zenith [project-name]\n')
+    console.log('Usage: npx create-zenith [project-name]\n')
     console.log('Create a new Zenith application.\n')
     console.log('Options:')
     console.log('  -h, --help           Show this help message')
@@ -344,6 +344,7 @@ if (args.includes('--help') || args.includes('-h')) {
     console.log('  npx create-zenith my-app')
     console.log('  bunx create-zenith my-app')
     console.log('  npm create zenith my-app')
+    console.log('  bun create zenith my-app')
     process.exit(0)
 }
 

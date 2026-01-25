@@ -18,13 +18,13 @@ The official CLI for scaffolding new Zenith applications. Fast, animated, and de
 
 ```bash
 # Using npm
-npm create @zenithbuild/zenith@latest
+npm create zenith@latest
 
 # Using Bun (Recommended)
-bun create @zenithbuild/zenith
+bun create zenith
 
 # Using pnpm
-pnpm create @zenithbuild/zenith
+pnpm create zenith
 ```
 
 ## Options

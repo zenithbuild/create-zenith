@@ -23,7 +23,7 @@ export interface ProjectOptions {
 }
 
 // Version constant
-const VERSION = '0.6.6'
+const VERSION = '1.3.0'
 
 // GitHub repository info
 const GITHUB_REPO = 'zenithbuild/create-zenith'

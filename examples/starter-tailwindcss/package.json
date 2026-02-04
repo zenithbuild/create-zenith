@@ -4,16 +4,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css --watch & bun zen-dev",
-        "build": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css && bun zen-build",
-        "preview": "bun zen-preview",
-        "tailwind": "bun tailwindcss -i ./src/styles/global.css -o ./src/public/zenith.css",
+        "dev": "zenith dev",
+        "build": "zenith build",
+        "preview": "zenith preview",
         "test": "bun test",
         "lint": "eslint .",
         "format": "prettier --write ."
     },
     "dependencies": {
-        "@zenithbuild/core": "^1.2.1"
+        "@zenithbuild/core": "^1.3.0"
     },
     "devDependencies": {
         "@tailwindcss/cli": "latest",

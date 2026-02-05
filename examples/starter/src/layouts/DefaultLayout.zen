@@ -1,5 +1,8 @@
 <script setup="ts">
-    // interface Props { title?: string; lang?: string }
+    interface Props { 
+        title?: string;
+        lang?: string;
+    }
     
     zenEffect(() => {
         document.title = title || 'Zenith App'
@@ -8,6 +11,7 @@
     zenOnMount(() => {
         console.log(`[Layout] Mounted with title: ${title || 'Zenith App'}`)
     })
+    const { title, lang } = props as Props; 
 </script>
 
 <html lang={lang || 'en'}>

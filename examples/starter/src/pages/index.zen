@@ -29,7 +29,7 @@ function decrement() {
                     simplicity, and beautiful developer experience.
                 </p>
                 <div class="hero-actions">
-                    <button onclick="increment" class="btn btn-primary"> Count: {count}</button>
+                    <button on:click={increment} class="btn btn-primary"> Count: {count}</button>
                     <a href="https://github.com/judahsullivan" target="_blank" class="btn btn-primary" rel="noopener">
                         View GitHub Profile
                     </a>

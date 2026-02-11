@@ -1,25 +1,22 @@
 {
   "name": "create-zenith",
-  "version": "1.3.17",
-  "description": "Create a new Zenith application - the modern reactive web framework",
+  "version": "1.0.0",
+  "description": "Deterministic Zenith project scaffolder",
   "type": "module",
   "bin": {
-    "create-zenith": "./dist/cli.js"
+    "create-zenith": "./src/index.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
   },
   "files": [
-    "dist"
+    "src",
+    "templates",
+    "CREATE_CONTRACT.md"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node --format esm && node -e \"const fs=require('fs');const c=fs.readFileSync('dist/index.js','utf8');fs.writeFileSync('dist/cli.js','#!/usr/bin/env node\\n'+c);fs.chmodSync('dist/cli.js','755')\"",
-    "prepublishOnly": "npm run build",
-    "create": "bun src/index.ts",
-    "example": "rm -rf examples/test-template && bun src/index.ts test-template && mv test-template examples/",
-    "test": "node dist/cli.js --help",
-    "release": "bun run scripts/release.ts",
-    "release:dry": "bun run scripts/release.ts --dry-run",
-    "release:patch": "bun run scripts/release.ts --bump=patch",
-    "release:minor": "bun run scripts/release.ts --bump=minor",
-    "release:major": "bun run scripts/release.ts --bump=major"
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --config jest.config.js --runInBand"
   },
   "keywords": [
     "zenith",
@@ -42,13 +39,8 @@
     "access": "public"
   },
   "private": false,
-  "dependencies": {
-    "@clack/prompts": "^0.11.0",
-    "gradient-string": "^3.0.0",
-    "picocolors": "^1.1.1"
-  },
   "devDependencies": {
-    "@types/gradient-string": "^1.1.6",
-    "@types/node": "^20.0.0"
+    "@jest/globals": "^30.2.0",
+    "jest": "^30.2.0"
   }
 }

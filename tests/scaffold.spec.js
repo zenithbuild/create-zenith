@@ -33,21 +33,21 @@ dist
 coverage
 ",
   "package.json": "{
-  "name": "basic-app",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "zenith dev",
-    "build": "zenith build",
-    "preview": "zenith preview"
-  },
   "dependencies": {
     "@zenithbuild/core": "1.0.0"
   },
   "devDependencies": {
     "@zenithbuild/cli": "1.0.0"
-  }
+  },
+  "name": "basic-app",
+  "private": true,
+  "scripts": {
+    "build": "zenith build",
+    "dev": "zenith dev",
+    "preview": "zenith preview"
+  },
+  "type": "module",
+  "version": "0.1.0"
 }
 ",
   "pages/index.zen": "<main>
@@ -83,22 +83,22 @@ dist
 coverage
 ",
   "package.json": "{
-  "name": "router-app",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "zenith dev",
-    "build": "zenith build",
-    "preview": "zenith preview"
-  },
   "dependencies": {
     "@zenithbuild/core": "1.0.0",
     "@zenithbuild/router": "1.0.0"
   },
   "devDependencies": {
     "@zenithbuild/cli": "1.0.0"
-  }
+  },
+  "name": "router-app",
+  "private": true,
+  "scripts": {
+    "build": "zenith build",
+    "dev": "zenith dev",
+    "preview": "zenith preview"
+  },
+  "type": "module",
+  "version": "0.1.0"
 }
 ",
   "pages/about.zen": "<main>

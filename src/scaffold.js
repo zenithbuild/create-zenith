@@ -75,8 +75,23 @@ function packageJsonForPreset(projectName, preset) {
 
 function writeGeneratedPackageJson(targetDir, projectName, preset) {
     const pkg = packageJsonForPreset(projectName, preset);
+    const sortedPkg = sortObjectKeys(pkg);
     const pkgPath = path.join(targetDir, 'package.json');
-    fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(pkgPath, `${JSON.stringify(sortedPkg, null, 2)}\n`, 'utf8');
+}
+
+function sortObjectKeys(obj) {
+    return Object.keys(obj)
+        .sort()
+        .reduce((acc, key) => {
+            const value = obj[key];
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                acc[key] = sortObjectKeys(value);
+            } else {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
 }
 
 export function scaffoldProject({ projectName, targetDir, preset }) {

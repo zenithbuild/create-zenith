@@ -1,8 +1,15 @@
+<script server>
+    export const data = {
+        title: "Zenith Tailwind Starter",
+        message: "Welcome to the Zenith + Tailwind Starter Template!"
+    };
+</script>
+
 <script setup="ts">
 
     state count = 0 
     zenOnMount(() => {
-        // Ready to build
+        console.log('🚀 ' + data.message)
     })
 
     function increment() {
@@ -13,8 +20,8 @@
     }
 </script>
 
-<DefaultLayout title="Zenith | The Modern Reactive Framework">
-    <div class="flex flex-col gap-16 pb-32 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.08)_0%,transparent_50%)]">
+<DefaultLayout title={data.title}>
+    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col gap-16 pb-32">
         <!-- Hero Section -->
         <section class="px-8 py-20 text-center relative">
             <div class="mx-auto max-w-[800px] flex flex-col items-center gap-6">
@@ -29,7 +36,7 @@
                     simplicity, and beautiful developer experience.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 mt-4 animate-in slide-in-from-bottom duration-1000 fade-in">
-                    <button onclick="increment" class="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90">
+                    <button on:click={increment} class="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90">
                         Count: {count}
                     </button>
                     <a href="https://github.com/judahsullivan" target="_blank" class="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90" rel="noopener">

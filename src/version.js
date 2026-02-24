@@ -8,10 +8,10 @@
 export const VERSIONS = {
     // Zenith Packages (Pinned V0)
     zenith: "1.0.0", // Combined/aliased if needed, or individual packages:
-    "@zenithbuild/core": "1.0.0",
-    "@zenithbuild/cli": "1.0.0",
-    "@zenithbuild/router": "1.0.0",
-    "@zenithbuild/runtime": "1.0.0",
+    "@zenithbuild/core": "0.5.0-beta.1",
+    "@zenithbuild/cli": "0.5.0-beta.1",
+    "@zenithbuild/router": "0.5.0-beta.1",
+    "@zenithbuild/runtime": "0.5.0-beta.1",
 
     // Peer Dependencies / Tools
     "typescript": "5.3.0", // Example pinned version

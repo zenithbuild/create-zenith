@@ -16,25 +16,25 @@
 
 <html lang={lang || 'en'}>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
     <!-- Preload LCP Assets -->
-    <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml">
-    <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/QGYsz_ueBhSfdrnSj5EaacA.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
+    <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/QGYsz_ueBhSfdrnSj5EaacA.woff2" as="font" type="font/woff2" crossorigin />
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="/styles/global.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="/styles/global.css" />
 </head>
 <body>
     <div class="layout">
         <header class="header">
             <nav class="nav">
                 <a href="/" class="nav-logo" aria-label="Zenith Home">
-                    <img src="/logo.svg" alt="" class="logo-img" width="32" height="32">
+                    <img src="/logo.svg" alt="" class="logo-img" width="32" height="32" />
                     <span class="logo-text">Zenith</span>
                 </a>
                 <div class="nav-links">
@@ -49,7 +49,7 @@
         
         <footer class="footer">
             <div class="footer-content">
-                <img src="/logo.svg" alt="" class="footer-logo" width="24" height="24" loading="lazy">
+                <img src="/logo.svg" alt="" class="footer-logo" width="24" height="24" loading="lazy" />
                 <p>Built with ⚡ Zenith Framework</p>
                 <div class="footer-links">
                     <a href="https://github.com/judahsullivan" target="_blank">@judahsullivan</a>

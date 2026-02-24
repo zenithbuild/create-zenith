@@ -11,8 +11,10 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
 import { execSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import * as brand from './branding.js'
 import * as prompts from './prompts.js'
+import { getUiMode } from './ui/env.js'
 
 export interface ProjectOptions {
     name: string
@@ -29,6 +31,19 @@ const VERSION = '1.3.0'
 const GITHUB_REPO = 'zenithbuild/create-zenith'
 const DEFAULT_TEMPLATE = 'examples/starter'
 const TAILWIND_TEMPLATE = 'examples/starter-tailwindcss'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+function flagEnabled(value: string | undefined): boolean {
+    if (value == null) return false
+    const normalized = value.trim().toLowerCase()
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on'
+}
+
+function resolveLocalTemplatePath(templatePath: string): string | null {
+    const candidate = path.resolve(__dirname, '..', templatePath)
+    return fs.existsSync(candidate) ? candidate : null
+}
 
 /**
  * Detect which package manager is available
@@ -73,6 +88,19 @@ function hasGit(): boolean {
  * Download template from GitHub
  */
 async function downloadTemplate(targetDir: string, templatePath: string): Promise<void> {
+    const localTemplatePath = resolveLocalTemplatePath(templatePath)
+    const forceLocal = process.env.CREATE_ZENITH_TEMPLATE_MODE === 'local' || flagEnabled(process.env.CREATE_ZENITH_OFFLINE)
+    const preferLocal = process.env.CREATE_ZENITH_PREFER_LOCAL !== '0'
+
+    if (localTemplatePath && (forceLocal || preferLocal)) {
+        fs.cpSync(localTemplatePath, targetDir, { recursive: true })
+        return
+    }
+
+    if (forceLocal && !localTemplatePath) {
+        throw new Error(`Local template not found: ${templatePath}`)
+    }
+
     const tempDir = path.join(os.tmpdir(), `zenith-template-${Date.now()}`)
 
     try {
@@ -283,6 +311,9 @@ async function create(appName?: string, withTailwind?: boolean): Promise<void> {
 
     // Gather project options
     const options = await gatherOptions(appName, withTailwind)
+    const templateLabel = options.tailwind ? 'starter-tailwindcss' : 'starter'
+
+    brand.showScaffoldSummary(options.name, templateLabel)
 
     console.log('')
     prompts.log.step(`Creating ${brand.bold(options.name)}...`)
@@ -301,16 +332,21 @@ async function create(appName?: string, withTailwind?: boolean): Promise<void> {
         const targetDir = path.resolve(process.cwd(), options.name)
         const pm = detectPackageManager()
 
-        try {
-            // Run install in the target directory
-            execSync(`${pm} install`, {
-                cwd: targetDir,
-                stdio: 'pipe'
-            })
-            s.stop('Dependencies installed')
-        } catch {
-            s.stop('Could not install dependencies automatically')
+        if (flagEnabled(process.env.CREATE_ZENITH_SKIP_INSTALL)) {
+            s.stop('Dependency installation skipped')
             brand.warn(`Run "${pm} install" manually in the project directory`)
+        } else {
+            try {
+                // Run install in the target directory
+                execSync(`${pm} install`, {
+                    cwd: targetDir,
+                    stdio: 'pipe'
+                })
+                s.stop('Dependencies installed')
+            } catch {
+                s.stop('Could not install dependencies automatically')
+                brand.warn(`Run "${pm} install" manually in the project directory`)
+            }
         }
 
         // Show completion with animation and next steps
@@ -362,6 +398,10 @@ const withTailwind = args.includes('--with-tailwind') ? true : undefined
 
 // Run the create command
 create(projectName, withTailwind).catch((err: unknown) => {
+    const mode = getUiMode(process)
+    if (mode.plain) {
+        console.log('ERROR: SCAFFOLD_ERROR')
+    }
     brand.error(err instanceof Error ? err.message : String(err))
     process.exit(1)
 })

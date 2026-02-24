@@ -6,8 +6,14 @@
  */
 
 import * as p from '@clack/prompts'
-import pc from 'picocolors'
+import { createColors } from 'picocolors'
 import * as brand from './branding.js'
+import { getUiMode } from './ui/env.js'
+
+function pc() {
+    const mode = getUiMode(process)
+    return createColors(mode.color)
+}
 
 /**
  * Zenith-styled intro with animated logo
@@ -15,7 +21,13 @@ import * as brand from './branding.js'
 export async function intro(): Promise<void> {
     await brand.animateLogo()
     console.log()
-    p.intro(pc.bgCyan(pc.black(' create-zenith ')))
+    const mode = getUiMode(process)
+    if (mode.plain) {
+        console.log('create-zenith')
+        return
+    }
+    const colors = pc()
+    p.intro(colors.bgCyan(colors.black(' create-zenith ')))
 }
 
 /**
@@ -82,7 +94,11 @@ export function isCancel(value: unknown): value is symbol {
  * Handle user cancellation gracefully
  */
 export function handleCancel(): never {
-    p.cancel('Operation cancelled.')
+    if (getUiMode(process).plain) {
+        console.log('WARN: Operation cancelled.')
+    } else {
+        p.cancel('Operation cancelled.')
+    }
     process.exit(0)
 }
 
@@ -90,7 +106,22 @@ export function handleCancel(): never {
  * Zenith-styled spinner for async operations
  */
 export function spinner(): ReturnType<typeof p.spinner> {
-    return p.spinner()
+    if (getUiMode(process).animate) {
+        return p.spinner()
+    }
+    return {
+        start(message: string) {
+            console.log(`INFO: ${message}`)
+        },
+        stop(message?: string) {
+            if (message) {
+                console.log(`OK: ${message}`)
+            }
+        },
+        message(message: string) {
+            console.log(`INFO: ${message}`)
+        }
+    } as ReturnType<typeof p.spinner>
 }
 
 /**
@@ -105,10 +136,10 @@ export async function outro(projectName: string, packageManager: string): Promis
  * Log helpers that wrap @clack/prompts log functions
  */
 export const log = {
-    info: (message: string) => p.log.info(message),
-    success: (message: string) => p.log.success(message),
-    warn: (message: string) => p.log.warn(message),
-    error: (message: string) => p.log.error(message),
-    step: (message: string) => p.log.step(message),
-    message: (message: string) => p.log.message(message)
+    info: (message: string) => getUiMode(process).plain ? console.log(`INFO: ${message}`) : p.log.info(message),
+    success: (message: string) => getUiMode(process).plain ? console.log(`OK: ${message}`) : p.log.success(message),
+    warn: (message: string) => getUiMode(process).plain ? console.log(`WARN: ${message}`) : p.log.warn(message),
+    error: (message: string) => getUiMode(process).plain ? console.log(`ERROR: ${message}`) : p.log.error(message),
+    step: (message: string) => getUiMode(process).plain ? console.log(`STEP: ${message}`) : p.log.step(message),
+    message: (message: string) => getUiMode(process).plain ? console.log(message) : p.log.message(message)
 }

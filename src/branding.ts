@@ -1,39 +1,43 @@
 /**
  * Zenith CLI Branding
- * 
- * ASCII art logo, colors, animations, and styled output.
- * Runtime-agnostic: works identically on Bun and Node.
+ *
+ * Deterministic output with plain/TTY-aware behavior.
  */
 
-import pc from 'picocolors'
+import { createColors } from 'picocolors'
 import gradient from 'gradient-string'
+import { getUiMode } from './ui/env.js'
+
+function ui() {
+    return getUiMode(process)
+}
+
+function pc() {
+    return createColors(ui().color)
+}
+
+function zenithGradientText(text: string): string {
+    if (!ui().color) return text
+    return gradient(['#3b82f6', '#06b6d4', '#22d3ee'])(text)
+}
 
 // Brand colors
 export const colors = {
-    primary: pc.blue,
-    secondary: pc.cyan,
-    success: pc.green,
-    warning: pc.yellow,
-    error: pc.red,
-    muted: pc.gray,
-    bold: pc.bold,
-    dim: pc.dim
+    primary: (text: string) => pc().blue(text),
+    secondary: (text: string) => pc().cyan(text),
+    success: (text: string) => pc().green(text),
+    warning: (text: string) => pc().yellow(text),
+    error: (text: string) => pc().red(text),
+    muted: (text: string) => pc().gray(text),
+    bold: (text: string) => pc().bold(text),
+    dim: (text: string) => pc().dim(text)
 }
 
-// Zenith gradient (blue to cyan)
-const zenithGradient = gradient(['#3b82f6', '#06b6d4', '#22d3ee'])
-
-// Check if running in interactive TTY mode (safe for animations)
+// Check if running in interactive TTY mode (safe for animations/prompts)
 export function isTTY(): boolean {
-    return Boolean(
-        process.stdout.isTTY &&
-        !process.env.CI &&
-        !process.env.GITHUB_ACTIONS &&
-        !process.env.CONTINUOUS_INTEGRATION
-    )
+    return ui().animate
 }
 
-// Raw ASCII logo lines (without color) for animation
 const LOGO_LINES = [
     '  ███████╗███████╗███╗   ██╗██╗████████╗██╗  ██╗',
     '  ╚══███╔╝██╔════╝████╗  ██║██║╚══██╔══╝██║  ██║',
@@ -45,23 +49,22 @@ const LOGO_LINES = [
 
 const TAGLINE = 'The Modern Reactive Web Framework'
 
-// ASCII Zenith logo (static, colored)
+function renderLogoLine(line: string): string {
+    return ui().color ? zenithGradientText(line) : line
+}
+
 export const LOGO = `
-${pc.cyan('╔' + '═'.repeat(55) + '╗')}
-${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
-${LOGO_LINES.map(line => `${pc.cyan('║')}  ${zenithGradient(line)}  ${pc.cyan('║')}`).join('\n')}
-${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
-${pc.cyan('║')}${' '.repeat(10)}${pc.dim(TAGLINE)}${' '.repeat(10)}${pc.cyan('║')}
-${pc.cyan('║')}${' '.repeat(55)}${pc.cyan('║')}
-${pc.cyan('╚' + '═'.repeat(55) + '╝')}
+${pc().cyan('╔' + '═'.repeat(55) + '╗')}
+${pc().cyan('║')}${' '.repeat(55)}${pc().cyan('║')}
+${LOGO_LINES.map(line => `${pc().cyan('║')}  ${renderLogoLine(line)}  ${pc().cyan('║')}`).join('\n')}
+${pc().cyan('║')}${' '.repeat(55)}${pc().cyan('║')}
+${pc().cyan('║')}${' '.repeat(10)}${pc().dim(TAGLINE)}${' '.repeat(10)}${pc().cyan('║')}
+${pc().cyan('║')}${' '.repeat(55)}${pc().cyan('║')}
+${pc().cyan('╚' + '═'.repeat(55) + '╝')}
 `
 
-// Compact logo for smaller spaces
-export const LOGO_COMPACT = `
-  ${pc.bold(zenithGradient('⚡ ZENITH'))} ${pc.dim('- Modern Reactive Framework')}
-`
+export const LOGO_COMPACT = `  ${pc().bold(renderLogoLine('⚡ ZENITH'))} ${pc().dim('- Modern Reactive Framework')}`
 
-// Glowing spinner frames
 const spinnerFrames = ['◐', '◓', '◑', '◒']
 const dotSpinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
@@ -77,9 +80,9 @@ export class Spinner {
     }
 
     start(): void {
-        if (!isTTY()) {
-            // Non-TTY: just print the message once
-            console.log(`${pc.cyan('◌')} ${this.message}`)
+        const mode = ui()
+        if (!mode.animate) {
+            console.log(`INFO: ${this.message}`)
             return
         }
 
@@ -90,7 +93,7 @@ export class Spinner {
         }
 
         this.interval = setInterval(() => {
-            const frame = pc.cyan(this.frames[this.frameIndex])
+            const frame = pc().cyan(this.frames[this.frameIndex])
             write(`\r${frame} ${this.message}`)
             this.frameIndex = (this.frameIndex + 1) % this.frames.length
         }, 80)
@@ -102,13 +105,12 @@ export class Spinner {
             this.interval = null
         }
 
-        if (isTTY()) {
+        if (ui().animate) {
             const write = (text: string) => {
                 if (process.stdout?.write) {
                     process.stdout.write(text)
                 }
             }
-            // Clear the line
             write('\r' + ' '.repeat(this.message.length + 5) + '\r')
         }
 
@@ -118,11 +120,11 @@ export class Spinner {
     }
 
     succeed(message: string): void {
-        this.stop(`${pc.green('✓')} ${message}`)
+        this.stop(ui().plain ? `OK: ${message}` : `${pc().green('✓')} ${message}`)
     }
 
     fail(message: string): void {
-        this.stop(`${pc.red('✗')} ${message}`)
+        this.stop(ui().plain ? `ERROR: ${message}` : `${pc().red('✗')} ${message}`)
     }
 
     update(message: string): void {
@@ -130,152 +132,160 @@ export class Spinner {
     }
 }
 
-// Sleep utility
 function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Animated logo with progressive draw effect
 export async function animateLogo(): Promise<void> {
-    if (!isTTY()) {
-        showLogo()
+    if (!ui().animate) {
+        showCompactLogo()
         return
     }
 
     console.clear()
+    console.log(pc().cyan('╔' + '═'.repeat(55) + '╗'))
+    console.log(pc().cyan('║') + ' '.repeat(55) + pc().cyan('║'))
 
-    // Draw border first
-    console.log(pc.cyan('╔' + '═'.repeat(55) + '╗'))
-    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
-
-    // Progressive reveal of each logo line
-    for (let i = 0; i < LOGO_LINES.length; i++) {
-        const line = LOGO_LINES[i]
-        process.stdout.write(pc.cyan('║') + '  ')
-
-        // Reveal characters progressively
+    for (const line of LOGO_LINES) {
+        process.stdout.write(pc().cyan('║') + '  ')
         const chars = [...line]
-        const chunkSize = Math.ceil(chars.length / 8) // Reveal in 8 chunks for speed
-
+        const chunkSize = Math.ceil(chars.length / 8)
         for (let j = 0; j < chars.length; j += chunkSize) {
             const chunk = chars.slice(j, j + chunkSize).join('')
-            process.stdout.write(zenithGradient(chunk))
+            process.stdout.write(renderLogoLine(chunk))
             await sleep(30)
         }
-
-        console.log('  ' + pc.cyan('║'))
+        console.log('  ' + pc().cyan('║'))
     }
 
-    // Complete the box
-    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
-
-    // Animate tagline
-    process.stdout.write(pc.cyan('║') + ' '.repeat(10))
+    console.log(pc().cyan('║') + ' '.repeat(55) + pc().cyan('║'))
+    process.stdout.write(pc().cyan('║') + ' '.repeat(10))
     const taglineChars = [...TAGLINE]
     for (let i = 0; i < taglineChars.length; i += 4) {
         const chunk = taglineChars.slice(i, i + 4).join('')
-        process.stdout.write(pc.dim(chunk))
+        process.stdout.write(pc().dim(chunk))
         await sleep(20)
     }
-    console.log(' '.repeat(10) + pc.cyan('║'))
-
-    console.log(pc.cyan('║') + ' '.repeat(55) + pc.cyan('║'))
-    console.log(pc.cyan('╚' + '═'.repeat(55) + '╝'))
-
+    console.log(' '.repeat(10) + pc().cyan('║'))
+    console.log(pc().cyan('║') + ' '.repeat(55) + pc().cyan('║'))
+    console.log(pc().cyan('╚' + '═'.repeat(55) + '╝'))
     await sleep(150)
 }
 
-// Show static logo
 export function showLogo(): void {
     console.log(LOGO)
 }
 
 export function showCompactLogo(): void {
+    if (ui().plain) {
+        console.log('ZENITH - Modern Reactive Framework')
+        return
+    }
     console.log(LOGO_COMPACT)
 }
 
-// Completion animation with pulse effect
 export async function showCompletionAnimation(): Promise<void> {
-    if (!isTTY()) {
-        console.log(`${pc.green('✓')} ${pc.bold('Done!')}`)
+    if (!ui().animate) {
+        console.log('OK: Done!')
         return
     }
 
     const frames = ['✓', '✨', '✓', '✨', '✓']
-    const colors = [pc.green, pc.yellow, pc.green, pc.yellow, pc.green]
+    const colors = [pc().green, pc().yellow, pc().green, pc().yellow, pc().green]
 
     for (let i = 0; i < frames.length; i++) {
-        process.stdout.write(`\r${colors[i](frames[i])} ${pc.bold('Done!')}`)
+        process.stdout.write(`\r${colors[i](frames[i])} ${pc().bold('Done!')}`)
         await sleep(100)
     }
     console.log()
 }
 
-// Styled output functions
 export function header(text: string): void {
-    console.log(`\n${pc.bold(pc.cyan('▸'))} ${pc.bold(text)}\n`)
+    if (ui().plain) {
+        console.log(`\nINFO: ${text}\n`)
+        return
+    }
+    console.log(`\n${pc().bold(pc().cyan('▸'))} ${pc().bold(text)}\n`)
 }
 
 export function success(text: string): void {
-    console.log(`${pc.green('✓')} ${text}`)
+    console.log(ui().plain ? `OK: ${text}` : `${pc().green('✓')} ${text}`)
 }
 
 export function error(text: string): void {
-    console.log(`${pc.red('✗')} ${text}`)
+    console.log(ui().plain ? `ERROR: ${text}` : `${pc().red('✗')} ${text}`)
 }
 
 export function warn(text: string): void {
-    console.log(`${pc.yellow('⚠')} ${text}`)
+    console.log(ui().plain ? `WARN: ${text}` : `${pc().yellow('⚠')} ${text}`)
 }
 
 export function info(text: string): void {
-    console.log(`${pc.blue('ℹ')} ${text}`)
+    console.log(ui().plain ? `INFO: ${text}` : `${pc().blue('ℹ')} ${text}`)
 }
 
 export function step(num: number, text: string): void {
-    console.log(`${pc.dim(`[${num}]`)} ${text}`)
+    if (ui().plain) {
+        console.log(`STEP ${num}: ${text}`)
+        return
+    }
+    console.log(`${pc().dim(`[${num}]`)} ${text}`)
 }
 
 export function highlight(text: string): string {
-    return pc.cyan(text)
+    return ui().plain ? text : pc().cyan(text)
 }
 
 export function dim(text: string): string {
-    return pc.dim(text)
+    return ui().plain ? text : pc().dim(text)
 }
 
 export function bold(text: string): string {
-    return pc.bold(text)
+    return ui().plain ? text : pc().bold(text)
 }
 
-// Animated intro sequence
 export async function showIntro(): Promise<void> {
     await animateLogo()
 }
 
-// Next steps box with dynamic package manager
 export function showNextSteps(projectName: string, packageManager: string = 'bun'): void {
     const pm = packageManager
     const runCmd = pm === 'npm' ? 'npm run dev' : `${pm} run dev`
 
-    // Calculate padding for alignment
+    if (ui().plain) {
+        console.log('')
+        console.log('NEXT STEPS:')
+        console.log(`  cd ${projectName}`)
+        console.log(`  ${runCmd}`)
+        console.log('  open http://localhost:3000')
+        console.log('')
+        return
+    }
+
     const cdLine = `cd ${projectName}`
     const maxLineLen = 45
     const cdPadding = Math.max(1, maxLineLen - cdLine.length - 6)
     const runPadding = Math.max(1, maxLineLen - runCmd.length - 6)
 
     console.log(`
-${pc.cyan('┌' + '─'.repeat(50) + '┐')}
-${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.green('✨')} ${zenithGradient.multiline(pc.bold('Your Zenith app is ready!'))}${' '.repeat(17)}${pc.cyan('│')}
-${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.dim('Next steps:')}${' '.repeat(36)}${pc.cyan('│')}
-${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold(cdLine)}${' '.repeat(cdPadding)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.cyan('$')} ${pc.bold(runCmd)}${' '.repeat(runPadding)}${pc.cyan('│')}
-${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
-${pc.cyan('│')}   ${pc.dim('Then open')} ${pc.underline(pc.blue('http://localhost:3000'))}${' '.repeat(9)}${pc.cyan('│')}
-${pc.cyan('│')}${' '.repeat(50)}${pc.cyan('│')}
-${pc.cyan('└' + '─'.repeat(50) + '┘')}
+${pc().cyan('┌' + '─'.repeat(50) + '┐')}
+${pc().cyan('│')}${' '.repeat(50)}${pc().cyan('│')}
+${pc().cyan('│')}   ${pc().green('✨')} ${pc().bold(renderLogoLine('Your Zenith app is ready!'))}${' '.repeat(17)}${pc().cyan('│')}
+${pc().cyan('│')}${' '.repeat(50)}${pc().cyan('│')}
+${pc().cyan('│')}   ${pc().dim('Next steps:')}${' '.repeat(36)}${pc().cyan('│')}
+${pc().cyan('│')}${' '.repeat(50)}${pc().cyan('│')}
+${pc().cyan('│')}   ${pc().cyan('$')} ${pc().bold(cdLine)}${' '.repeat(cdPadding)}${pc().cyan('│')}
+${pc().cyan('│')}   ${pc().cyan('$')} ${pc().bold(runCmd)}${' '.repeat(runPadding)}${pc().cyan('│')}
+${pc().cyan('│')}${' '.repeat(50)}${pc().cyan('│')}
+${pc().cyan('│')}   ${pc().dim('Then open')} ${pc().underline(pc().blue('http://localhost:3000'))}${' '.repeat(9)}${pc().cyan('│')}
+${pc().cyan('│')}${' '.repeat(50)}${pc().cyan('│')}
+${pc().cyan('└' + '─'.repeat(50) + '┘')}
 `)
+}
+
+export function showScaffoldSummary(projectName: string, templateLabel: string): void {
+    const title = ui().plain ? 'SCAFFOLD PLAN' : pc().bold(pc().cyan('Scaffold Plan'))
+    console.log(`\n${title}`)
+    console.log(`Project : ${projectName}`)
+    console.log(`Template: ${templateLabel}`)
 }

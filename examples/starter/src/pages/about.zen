@@ -4,7 +4,7 @@
     };
 </script>
 
-<DefaultLayout title="Zenith Starter About">
+<DefaultLayout>
     <section class="container">
         <h1>About This Starter</h1>
         <p>

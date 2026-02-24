@@ -1,83 +1,66 @@
-/* Zenith Global Styles - Premium Theme */
-
 :root {
-    --zen-primary: #3b82f6;
-    --zen-primary-hover: #2563eb;
-    --zen-secondary: #06b6d4;
-    --zen-bg: #030712;
-    --zen-surface: #0f172a;
-    --zen-surface-border: rgba(255, 255, 255, 0.08);
-    --zen-text: #f8fafc;
-    --zen-muted: #94a3b8;
-    --zen-accent: #8b5cf6;
-    --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    color-scheme: dark;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* CSS Reset */
-*, *::before, *::after {
+* {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    scroll-behavior: smooth;
 }
 
 body {
-    font-family: var(--font-body);
-    line-height: 1.6;
-    background: var(--zen-bg);
-    color: var(--zen-text);
-    overflow-x: hidden;
+    margin: 0;
+    background: #030712;
+    color: #e2e8f0;
 }
 
 a {
-    color: var(--zen-primary);
-    text-decoration: none;
-    transition: all 0.2s ease;
+    color: #60a5fa;
 }
 
-a:hover {
-    color: var(--zen-primary-hover);
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #1e293b;
 }
 
-img, video {
-    max-width: 100%;
-    height: auto;
-}
-
-button, input, select, textarea {
-    font: inherit;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+.brand {
+    color: #f8fafc;
     font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    text-decoration: none;
 }
 
-/* Utility Classes */
+.site-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.site-main {
+    padding: 2rem 1.5rem 3rem;
+}
+
 .container {
-    max-width: 1200px;
+    max-width: 48rem;
     margin: 0 auto;
-    padding: 0 2rem;
 }
 
-.text-center { text-align: center; }
-.text-muted { color: var(--zen-muted); }
-
-.bg-gradient {
-    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
-@media (max-width: 768px) {
-    .container {
-        padding: 0 1.5rem;
-    }
+.button {
+    border: 1px solid #334155;
+    background: #1d4ed8;
+    color: #ffffff;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.link {
+    font-weight: 600;
 }

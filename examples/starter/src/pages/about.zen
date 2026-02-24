@@ -1,0 +1,15 @@
+<script server lang="ts">
+    export const data = {
+        pageTitle: "Zenith Starter About"
+    };
+</script>
+
+<DefaultLayout title="Zenith Starter About">
+    <section class="container">
+        <h1>About This Starter</h1>
+        <p>
+            This is a minimal Zenith starter with static routes and contract-safe defaults.
+        </p>
+        <a href="/" class="link">Back to home</a>
+    </section>
+</DefaultLayout>

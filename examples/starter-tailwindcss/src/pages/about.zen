@@ -11,6 +11,10 @@
             Tailwind input lives in <code>src/styles/globals.css</code> and compiles to
             <code>src/styles/output.css</code>.
         </p>
-        <a href="/" class="text-sky-300 underline-offset-4 hover:underline">Back to home</a>
+        <div class="flex flex-wrap items-center gap-3 text-sky-300">
+            <a href="/" class="underline-offset-4 hover:underline">Back to home</a>
+            <a href="/blog" class="underline-offset-4 hover:underline">Visit blog</a>
+            <a href="/docs" class="underline-offset-4 hover:underline">Visit docs</a>
+        </div>
     </section>
 </DefaultLayout>

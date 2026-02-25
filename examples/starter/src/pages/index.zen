@@ -19,6 +19,8 @@ function increment() {
         <div class="actions">
             <button on:click={increment} class="button">Count: {count}</button>
             <a href="/about" class="link">Visit about page</a>
+            <a href="/blog" class="link">Read blog page</a>
+            <a href="/docs" class="link">Open docs page</a>
         </div>
     </section>
 </DefaultLayout>

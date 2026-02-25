@@ -16,6 +16,8 @@
             <div class="flex items-center gap-4 text-sm">
                 <a href="/">Home</a>
                 <a href="/about">About</a>
+                <a href="/blog">Blog</a>
+                <a href="/docs">Docs</a>
             </div>
         </nav>
     </header>

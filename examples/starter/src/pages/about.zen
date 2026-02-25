@@ -10,6 +10,10 @@
         <p>
             This is a minimal Zenith starter with static routes and contract-safe defaults.
         </p>
-        <a href="/" class="link">Back to home</a>
+        <div class="actions">
+            <a href="/" class="link">Back to home</a>
+            <a href="/blog" class="link">Visit blog</a>
+            <a href="/docs" class="link">Visit docs</a>
+        </div>
     </section>
 </DefaultLayout>

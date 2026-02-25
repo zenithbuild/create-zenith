@@ -24,15 +24,24 @@ export interface ProjectOptions {
     tailwind: boolean
 }
 
-// Version constant
-const VERSION = '1.3.0'
-
 // GitHub repository info
 const GITHUB_REPO = 'zenithbuild/create-zenith'
 const DEFAULT_TEMPLATE = 'examples/starter'
 const TAILWIND_TEMPLATE = 'examples/starter-tailwindcss'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+function getCliVersion(): string {
+    try {
+        const pkgPath = path.resolve(__dirname, '..', 'package.json')
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+        return typeof pkg.version === 'string' ? pkg.version : '0.0.0'
+    } catch {
+        return '0.0.0'
+    }
+}
+
+const VERSION = getCliVersion()
 
 function flagEnabled(value: string | undefined): boolean {
     if (value == null) return false

@@ -8,6 +8,9 @@ import { pathToFileURL } from 'node:url';
 
 const CLI_PATH = resolve(process.cwd(), 'dist', 'cli.js');
 const WORKSPACE_ROOT = resolve(process.cwd(), '..');
+const CORE_VERSION = JSON.parse(
+    readFileSync(resolve(WORKSPACE_ROOT, 'zenith-core', 'package.json'), 'utf8')
+).version;
 const LOCAL_ZENITH_PACKAGES = [
     resolve(WORKSPACE_ROOT, 'zenith-core'),
     resolve(WORKSPACE_ROOT, 'zenith-cli'),
@@ -34,10 +37,20 @@ const FORBIDDEN_BUILD_PATTERNS = [
     /history\.replaceState/
 ];
 
-function run(cmd, args, cwd, env = process.env, timeout = 120_000) {
+function sanitizeChildEnv(env) {
+    const next = { ...env };
+    for (const key of Object.keys(next)) {
+        if (key.startsWith('npm_')) {
+            delete next[key];
+        }
+    }
+    return next;
+}
+
+function run(cmd, args, cwd, env = process.env, timeout = 240_000) {
     const result = spawnSync(cmd, args, {
         cwd,
-        env,
+        env: sanitizeChildEnv(env),
         encoding: 'utf8',
         timeout
     });
@@ -80,17 +93,25 @@ function assertPackageDependencies(projectDir) {
     const zenithDeps = Object.keys(pkg.dependencies || {}).filter((dep) => dep.startsWith('@zenithbuild/'));
 
     assert.deepEqual(zenithDeps, ['@zenithbuild/core'], 'Template must only directly depend on @zenithbuild/core');
-    assert.match(String(pkg.dependencies['@zenithbuild/core']), /beta/, 'Core dependency must use a beta version');
+    assert.equal(
+        String(pkg.dependencies['@zenithbuild/core']),
+        CORE_VERSION,
+        'Core dependency must match the workspace core version exactly'
+    );
 }
 
 function assertBuildArtifacts(projectDir) {
     const distDir = join(projectDir, 'dist');
     const indexHtmlPath = join(distDir, 'index.html');
     const aboutHtmlPath = join(distDir, 'about', 'index.html');
+    const blogHtmlPath = join(distDir, 'blog', 'index.html');
+    const docsHtmlPath = join(distDir, 'docs', 'index.html');
 
     assert.equal(existsSync(distDir), true, 'dist directory was not created');
     assert.equal(existsSync(indexHtmlPath), true, 'dist/index.html missing');
     assert.equal(existsSync(aboutHtmlPath), true, 'dist/about/index.html missing');
+    assert.equal(existsSync(blogHtmlPath), true, 'dist/blog/index.html missing');
+    assert.equal(existsSync(docsHtmlPath), true, 'dist/docs/index.html missing');
 }
 
 async function assertPreviewPayload(projectDir) {
@@ -102,15 +123,17 @@ async function assertPreviewPayload(projectDir) {
         port: 0
     });
     try {
-        const response = await fetch(`http://127.0.0.1:${preview.port}/`);
-        const html = await response.text();
+        for (const route of ['/', '/about', '/blog', '/docs']) {
+            const response = await fetch(`http://127.0.0.1:${preview.port}${route}`);
+            const html = await response.text();
 
-        assert.equal(response.status, 200, 'Preview server did not return 200 for "/"');
-        const payloadMatches = html.match(/id=\"zenith-ssr-data\"/g) || [];
-        assert.equal(payloadMatches.length, 1, 'Expected exactly one SSR payload script in built preview HTML');
+            assert.equal(response.status, 200, `Preview server did not return 200 for "${route}"`);
+            const payloadMatches = html.match(/id=\"zenith-ssr-data\"/g) || [];
+            assert.equal(payloadMatches.length, 1, `Expected exactly one SSR payload script in "${route}"`);
 
-        for (const pattern of FORBIDDEN_BUILD_PATTERNS) {
-            assert.equal(pattern.test(html), false, `Forbidden build output pattern: ${pattern}`);
+            for (const pattern of FORBIDDEN_BUILD_PATTERNS) {
+                assert.equal(pattern.test(html), false, `Forbidden build output pattern (${route}): ${pattern}`);
+            }
         }
     } finally {
         preview.close();

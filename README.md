@@ -35,6 +35,18 @@ pnpm create zenith
 | `-h, --help` | Show usage information |
 | `-v, --version` | Show version number |
 
+## Beta Version Pinning
+
+Zenith beta currently pins `@zenithbuild/core` to `0.5.0-beta.2.13` and leaf packages (compiler, cli, runtime, router, bundler) to `0.5.0-beta.2.12`. This is intentional — core contains the CLI entry point and may bump independently for bin/CLI fixes without touching the engine.
+
+If you see version mismatches after install, delete `node_modules` and `package-lock.json`, then reinstall.
+
+## Latest Release (Beta 2.13)
+
+- **Fixed:** `zenith --help` now exits 0 reliably (bin wrapper early-exit before version-mismatch checks)
+- **Published:** Leaf packages at `0.5.0-beta.2.12`; `@zenithbuild/core` and `create-zenith` at `0.5.0-beta.2.13`
+- **Verified:** scaffold → install → `--version` → `--help` → build → all routes output static HTML (`/`, `/about`, `/blog`, `/docs`)
+
 ## Development
 
 ```bash

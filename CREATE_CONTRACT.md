@@ -1,5 +1,8 @@
 # CREATE_CONTRACT.md — Deterministic Project Scaffolder
 
+Canonical public docs: `../zenith-docs/documentation/contracts/create-contract.md`
+
+
 > **This document is a legal boundary.**
 > `create-zenith` is a dumb scaffolder. It generates files and exits.
 > It creates the project structure but owns NO runtime, build, or architectural logic.

@@ -1,4 +1,6 @@
 <script setup="ts">
+import "../styles/output.css";
+import "../styles/globals.css";
 </script>
 
 <html lang="en">

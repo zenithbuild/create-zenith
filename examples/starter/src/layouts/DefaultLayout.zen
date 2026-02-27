@@ -1,4 +1,5 @@
 <script setup="ts">
+import "../styles/global.css";
 </script>
 
 <html lang="en">
@@ -7,7 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zenith Starter</title>
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <link rel="stylesheet" href="/styles/global.css" />
 </head>
 <body>
     <header class="site-header">

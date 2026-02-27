@@ -2,6 +2,11 @@
 
 The official CLI for scaffolding new Zenith applications. Fast, animated, and delightful.
 
+## Canonical Docs
+
+- Create contract: `../zenith-docs/documentation/contracts/create-contract.md`
+- Install and compatibility: `../zenith-docs/documentation/install-compatibility.md`
+
 ## Overview
 
 `create-zenith` is the entry point to the Zenith ecosystem. It provides a signature, high-quality terminal experience for initializing new projects, ensuring you go from command line to `localhost` in seconds with confidence.

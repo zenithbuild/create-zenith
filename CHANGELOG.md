@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-beta.2.21] - 2026-03-01
+
+### ✨ Added
+
+- Tailwind starter now uses the globals-only workflow with `@import "tailwindcss";` in `src/styles/globals.css`.
+
+### Changed
+
+- Removed `tw:build`, `tw:watch`, `output.css`, and `tailwind.css` precompile guidance from the Tailwind starter example.
+- Starter layouts now import only `src/styles/globals.css`, matching Zenith's internal Tailwind compilation contract.
+
 ## [0.6.9] - 2026-01-26
 
 ### 📝 Other Changes
@@ -104,4 +115,3 @@ de1f4dd6467d9560b4e5b7b060b317f1dc000621 ()
 - 
 ef403ba315b2bd2516f4efc3348036fb3b5eff23 ()
 -  ()
-

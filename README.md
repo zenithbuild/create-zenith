@@ -1,3 +1,9 @@
+> **Moved:** Zenith core development now lives in **zenithbuild/framework**.
+>
+> New home: https://github.com/zenithbuild/framework/tree/master/packages/create-zenith
+>
+> This repository is archived and kept read-only for history.
+
 # create-zenith ⚡
 
 The official CLI for scaffolding new Zenith applications. Fast, animated, and delightful.
